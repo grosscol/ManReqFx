@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="525.0" prefWidth="712.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml" fx:controller="manreq.MainController">
+  <children>
+    <MenuBar minHeight="21.0" prefHeight="21.0" prefWidth="600.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <menus>
+        <Menu mnemonicParsing="false" text="File">
+          <items>
+            <MenuItem mnemonicParsing="false" text="Close" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Edit">
+          <items>
+            <MenuItem mnemonicParsing="false" text="Delete" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+          <items>
+            <MenuItem mnemonicParsing="false" text="About" />
+          </items>
+        </Menu>
+      </menus>
+    </MenuBar>
+    <SplitPane dividerPositions="0.7948207171314741" focusTraversable="true" orientation="VERTICAL" prefHeight="379.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="21.0">
+      <items>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+          <children>
+            <SplitPane dividerPositions="0.826271186440678" focusTraversable="true" prefHeight="185.0" prefWidth="598.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="0.0">
+              <items>
+                <AnchorPane fx:id="swapPane" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                  <children>
+                    <StackPane fx:id="swapStack" prefHeight="394.0" prefWidth="582.0000999999975" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                      <children>
+                        <TextArea fx:id="ta_welcome" editable="false" prefHeight="394.0" prefWidth="582.0" text="Greetings User,&#10;Welcome to the Requests Management Application for thie TIL Lab of the Surgery Branch at the National Cancer Institute.  Please select a request type to display and manage using one of the buttons on the right panel.&#10;&#10;&#10;" wrapText="true" />
+                      </children>
+                    </StackPane>
+                  </children>
+                </AnchorPane>
+                <AnchorPane maxWidth="-Infinity" minHeight="0.0" minWidth="-Infinity" prefHeight="278.0" prefWidth="120.0">
+                  <children>
+                    <ToolBar fx:id="tbar_acts" orientation="VERTICAL" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                      <items>
+                        <Button id="btn_SwitchTorRequests" fx:id="btn_SwitchToRequests" mnemonicParsing="false" onAction="#handleBtn_SwithToRequests" prefHeight="48.0" prefWidth="115.0" text="Outgoing Requests" textAlignment="CENTER" wrapText="true" />
+                        <Button id="btn_SwitchTorRequests" fx:id="btn_SwitchToIngress" graphicTextGap="5.0" mnemonicParsing="false" onAction="#handleBtn_SwitchToIngress" prefHeight="48.0" prefWidth="115.0" text="Incoming Requests" textAlignment="CENTER" wrapText="true" />
+                        <Button id="btn_SwitchTorRequests" fx:id="btn_SwitchToModifcations" disable="true" graphicTextGap="5.0" mnemonicParsing="false" onAction="#handleBtn_SwitchToModifications" prefHeight="48.0" prefWidth="115.0" text="Modification Requests" textAlignment="CENTER" wrapText="true" />
+                        <Separator prefHeight="21.0" prefWidth="110.0" />
+                        <Button fx:id="btn_commitEdits" disable="true" mnemonicParsing="false" onAction="#handleBtn_CommitEdits" prefHeight="30.0" prefWidth="110.0" text="Commit Edits" textAlignment="CENTER" />
+                        <Button fx:id="btn_cancelEdits" disable="true" mnemonicParsing="false" onAction="#handleBtn_CancelEdits" prefHeight="30.0" prefWidth="110.0" text="Cancel Edits" />
+                      </items>
+                    </ToolBar>
+                  </children>
+                </AnchorPane>
+              </items>
+            </SplitPane>
+          </children>
+        </AnchorPane>
+        <AnchorPane maxHeight="100.0" minHeight="-Infinity" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+          <children>
+            <TextArea fx:id="ta_info" editable="false" prefHeight="89.0" prefWidth="582.0" promptText="Program information goes here." text="Welcome to the Requests Management Program." wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+          </children>
+        </AnchorPane>
+      </items>
+    </SplitPane>
+  </children>
+  <stylesheets>
+    <URL value="@resources/mainpanel.css" />
+  </stylesheets>
+</AnchorPane>

@@ -1,0 +1,78 @@
+/*
+ * Some CSS help from http://fxexperience.com/2011/12/styling-fx-buttons-with-css/
+ */
+
+.mainFxmlClass {
+    
+    -fx-background-color: #dcdcdc;
+}
+
+.mainPanels{
+    /*
+    -fx-effect: innershadow(gaussian, rgba(0,20,0,0,0.7), 10, 10.0, 0, 0);
+    */
+    -fx-border-color: #888888;
+    -fx-border-radius: 2;
+    -fx-border-width: 2;
+    -fx-background-color: linear-gradient(to bottom right, #a9a9a9, #eeeeee);
+    
+}
+
+.text-area{
+    -fx-border-color: #000000;
+    -fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.4) , 15, 0.0 , 0 , 1 );
+    -fx-background-color: white;
+}
+
+
+#confirmTitle{
+    /*-fx-font: large;*/
+    /*-fx-font-family: monospace;*/
+    -fx-font-size: 24;
+    -fx-font-style: normal;
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+
+}
+
+#confirmButton{
+    -fx-background-color:
+        linear-gradient(#f0ff35, #a9ff00),
+        radial-gradient(center 50% -40%, radius 200%, #b8ee36 45%, #80c800 50%);
+    -fx-background-radius: 6, 5;
+    -fx-background-insets: 0, 1;
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.4) , 5, 0.0 , 0 , 1 );
+    -fx-text-fill: black;
+    -fx-border-width: 0;
+}
+
+#confirmButton:pressed{
+    -fx-background-color:
+        linear-gradient(#a0a0ff, #b0b0ff),
+        radial-gradient(center 50% -40%, radius 200%, #b8eeff 45%, #a0a0f0 50%);
+    -fx-background-radius: 6, 5;
+    -fx-background-insets: 0, 1;
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.4) , 5, 0.0 , 0 , 1 );
+    -fx-text-fill: black;
+}
+
+#cancelButton{
+    -fx-background-color:
+        linear-gradient(#ff5435, #be1d00),
+        radial-gradient(center 50% -40%, radius 200%, #eea836 45%, #c85000 50%);
+    -fx-background-radius: 6, 5;
+    -fx-background-insets: 0, 1;
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.4) , 5, 0.0 , 0 , 1 );
+    -fx-text-fill: black;
+    -fx-border-width: 0;
+}
+
+#cancelButton:pressed{
+    -fx-background-color:
+        linear-gradient(#a0a0ff, #b0b0ff),
+        radial-gradient(center 50% -40%, radius 200%, #b8eeff 45%, #a0a0f0 50%);
+    -fx-background-radius: 6, 5;
+    -fx-background-insets: 0, 1;
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.4) , 5, 0.0 , 0 , 1 );
+    -fx-text-fill: black;
+}

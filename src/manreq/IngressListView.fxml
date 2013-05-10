@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" fx:id="ingreesPane" prefHeight="390.0" prefWidth="580.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml" fx:controller="manreq.IngressListViewController"
+AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+  <children>
+    <ListView fx:id="ingressListView" editable="true" prefHeight="390.0" prefWidth="580.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+  </children>
+  <stylesheets>
+    <URL value="@resources/ingresslistview.css" />
+  </stylesheets>
+</AnchorPane>

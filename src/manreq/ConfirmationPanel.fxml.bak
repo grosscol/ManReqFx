@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="rootAnchorPane" fx:id="rootPane" prefHeight="212.07814707031503" prefWidth="379.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml" fx:controller="manreq.ConfirmationPanelController">
+  <children>
+    <BorderPane prefHeight="261.0" prefWidth="461.0" styleClass="mainFxmlClass" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="1.0">
+      <bottom>
+        <AnchorPane prefHeight="52.0" prefWidth="377.0">
+          <children>
+            <HBox alignment="TOP_RIGHT" prefHeight="50.0" prefWidth="461.0000915527344" styleClass="mainPanels" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <children>
+                <Button id="confirmButton" fx:id="btn_Confirm" defaultButton="true" mnemonicParsing="false" onAction="#handleConfirmClick" prefHeight="50.0" prefWidth="85.0" text="Confirm">
+                  <HBox.margin>
+                    <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" fx:id="x1" />
+                  </HBox.margin>
+                </Button>
+                <Button id="cancelButton" fx:id="btn_Cancel" cancelButton="true" mnemonicParsing="false" onAction="#handleCancelClick" prefHeight="50.0" prefWidth="85.0" styleClass="cancelButton" text="Cancel" HBox.margin="$x1" />
+              </children>
+            </HBox>
+          </children>
+          <BorderPane.margin>
+            <Insets top="1.0" />
+          </BorderPane.margin>
+        </AnchorPane>
+      </bottom>
+      <center>
+        <AnchorPane fx:id="descriptionPane" prefHeight="200.0" prefWidth="200.0">
+          <children>
+            <TextArea id="descriptionTextArea" fx:id="defaultTextArea" disable="true" editable="false" focusTraversable="false" prefHeight="117.0" prefWidth="395.0" text="Description of confirmation action" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+          </children>
+        </AnchorPane>
+      </center>
+      <top>
+        <AnchorPane minHeight="52.0" prefHeight="52.0" prefWidth="379.0" styleClass="mainPanels">
+          <children>
+            <Label id="confirmTitle" alignment="CENTER" prefHeight="51.999900000002526" prefWidth="377.0" styleClass="titleLabel" text="Confirm Action" textAlignment="CENTER" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+          </children>
+        </AnchorPane>
+      </top>
+    </BorderPane>
+  </children>
+  <stylesheets>
+    <URL value="@resources/confirmationpanel.css" />
+  </stylesheets>
+</AnchorPane>

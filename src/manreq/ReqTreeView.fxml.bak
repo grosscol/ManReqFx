@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane id="AnchorPane" fx:id="requestsPane" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml" fx:controller="manreq.ReqTreeViewController"
+    AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+  <children>
+    <TreeView fx:id="reqTreeView" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" >
+        
+    </TreeView>
+    
+    <!-- Dummy nodes to instantiate the context menus -->
+    <Label visible="false">
+        <contextMenu>
+            <ContextMenu fx:id="reqCartConMen" >
+                <items>
+                    <MenuItem text="Mark Approved"
+                        onAction="#cartMarkApproved"/>
+                    <MenuItem text="Mark Pulled"
+                        onAction="#cartMarkPulled"/>
+               </items>
+            </ContextMenu>  
+        </contextMenu>
+    </Label> 
+    
+    <Label visible="false">
+        <contextMenu>
+            <ContextMenu fx:id="reqEntryConMen" >
+                <items>
+                    <MenuItem text="Edit Entry"
+                        onAction="#entryEdit"/>
+                    <MenuItem text="Move to Duplicate Cart"
+                        onAction="#entryMoveToNewCart"/>
+                    <MenuItem text="Remove Entry"
+                        onAction="#entryRemove"/>
+               </items>
+            </ContextMenu>  
+        </contextMenu>
+    </Label> 
+    
+        <Label visible="false">
+        <contextMenu>
+            <ContextMenu fx:id="reqCategoryConMen" >
+                <items>
+                    <MenuItem text="Summary of Carts"
+                        onAction="#categorySummary"/>
+               </items>
+            </ContextMenu>  
+        </contextMenu>
+    </Label> 
+    
+  </children>
+  <stylesheets>
+    <URL value="@resources/reqtreeview.css" />
+  </stylesheets>
+</AnchorPane>

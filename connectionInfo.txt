@@ -1,0 +1,19 @@
+user=root
+password=ObviousAnswer
+url=jdbc:mysql://localhost:3697/til_lab
+
+# Directories from which the program can be run are encoded below.
+# key needs to match the pattern string "^validLocation[0-9]$"
+# value needs to be encrypted using the TIL Labs PBE cypher
+
+# C:/Users/grossco/Documents/Devel/ManReqFx
+validLocation0=ENC("SzCpq5HAhkFAFeaG3Nk4f+DSDT6s0BQC4vthLBmGJpY7ROh1wBhcU0AzvVJW5GiBBrVKJdolt/o=")
+
+# S:/TIL-LAB/CustomApps/DemoDirectory
+validLocation1=ENC("e2SuN7BLZ9sf8L0/eqCVwP75ULD5lfLHPvr9HOTWuqGSreexRd5/wU1dGfgshbVc")
+
+#
+#  Notes on making encoded strings.
+#  Jasypt command line tools.
+#
+

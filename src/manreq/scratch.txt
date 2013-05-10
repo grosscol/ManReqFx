@@ -1,0 +1,421 @@
+
+
+//        Field treeviewField = MainController.class.getDeclaredField("tview_prime");
+//        ParameterizedType stringListType = (ParameterizedType) treeviewField.getGenericType();
+//        Class<?> treeviewClass = (Class<?>) stringListType.getActualTypeArguments()[0];
+//        System.out.println(treeviewClass); // class java.lang.String.
+            
+
+        /*
+        //Modification of the TextFieldTreeCell source.
+        //Call back for TreeView<Request> input and MyTreeCell return type
+        public <Request> Callback<TreeView<Request>, MyTreeCell > forTreeView() {
+            return new Callback<TreeView<Request>, MyTreeCell >() {
+                @Override public MyTreeCell call(TreeView<Request> list) {
+                    return new MyTreeCell();
+                }
+            };
+        } */
+
+
+    /* Inner class to implement the Cell Factory for the tree view.
+     * This will handle the drag and drop events for the cells. And notify
+     * the particular compenents that need to have changeds propegated.
+    */
+    public class TrCellFact implements Callback<TreeView<String>, TreeCell<String>>{
+        
+        @Override
+        public TreeCell<String> call(TreeView<String> stringTreeView) {
+            final TreeCell<String> treeCell = new TreeCell<String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (item != null) {
+                        //Do required update for new backing data
+                        setText(item);
+                    }
+                 }              
+             }; 
+            
+            treeCell.setOnDragDetected(new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent mEvt) {
+                        log.debug("--DragDetected--");
+                        
+                        //Begin drag-and-drop gesture()
+                        Dragboard db = treeCell.startDragAndDrop(TransferMode.MOVE);
+
+                        //Put some data into the dragboard
+                        ClipboardContent ct = new ClipboardContent();
+                        ct.putString("blag");
+                        db.setContent(ct);
+                    
+                        mEvt.consume();
+                    }
+                });
+            
+            
+ 
+            treeCell.setOnDragOver(new EventHandler<DragEvent>() {
+                    @Override
+                    public void handle(DragEvent dEvt) {
+                        /* data is dragged over the target */
+                        /* accept it only if it is not dragged from the same node 
+                         * and if it has a string data */
+                        if (dEvt.getGestureSource() != treeCell) {
+                            dEvt.acceptTransferModes(TransferMode.MOVE);
+                            //log.debug("--DragOver--");
+                        } else {
+                            //log.debug("--DragOver SameAsSource--");
+                        }
+
+                        dEvt.consume();
+                    }
+                });
+            
+            treeCell.setOnDragEntered(new EventHandler<DragEvent>(){
+                @Override
+                public void handle(DragEvent dEvt){
+                    if (dEvt.getGestureSource() != treeCell) {
+                            //event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                            log.debug("--DragEntered--");
+                            treeCell.setTextFill(Color.GREEN);
+                        } else {
+                            log.debug("--DragEntered SameAsSource--");
+                        }
+                    
+                    dEvt.consume();
+                }
+            });
+            
+            treeCell.setOnDragExited(new EventHandler<DragEvent>(){
+                @Override
+                public void handle(DragEvent dEvt){
+                    if (dEvt.getGestureSource() != treeCell) {
+                            //event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                            log.debug("--DragExit-");
+                            treeCell.setTextFill(Color.BLACK);
+                        } else {
+                            log.debug("--DragExit SameAsSource--");
+                        }
+                    
+                    dEvt.consume();
+                }
+            });
+
+            return treeCell;
+    
+        }
+    }
+
+    /* Inner class to implement a custom TreeItem<String> for the 
+     * Requests Tree View
+     */
+    private class ReqTrItem extends TreeItem<String>{
+        //Store a copy of the underlying Model item.
+        //It should be of type Request
+        Request sourceData;
+        
+        ReqTrItem(){
+            super("Blank");
+            sourceData = null;
+        }
+        
+        ReqTrItem(String s){
+            super("Blank String");
+            sourceData = null;
+        }
+
+        ReqTrItem( Request req ){
+            super("Blank Req");
+            if(req == null){
+                sourceData = null;
+            }else{
+                sourceData = req;
+                setValue(req.getRname());
+            }
+        }
+        
+        
+    }
+    
+
+//COMPARATOR FOR ORDERING LIST OF REQUESTS
+    private class ReqComtor implements Comparator<Request>{
+
+        @Override
+        public int compare(Request o1, Request o2) {
+            //EQUALITY COMPARISON
+            if( o1.getReqIndex() == o2.getReqIndex() ){return 0;}
+
+            //0.DATE SUBMITTED
+            if( o1.getDatesub().compareTo(o2.getDatesub()) != 0 ){
+                return o1.getDatesub().compareTo(o2.getDatesub());
+            }
+
+            //1.CART NUMBER COMPARISON
+            if( o1.getCartnum() < o2.getCartnum()){
+                return -1;
+            }else if(o1.getCartnum() > o2.getCartnum()){
+                return 1;
+            }
+
+            
+
+            //2.LOCATION COMPARISON
+            int locCompare;
+            //make sure locations are not null
+            if (o1.getInvRecord().getLocation() != null && 
+                    o2.getInvRecord().getLocation() != null) {
+                //Attached Norminv and Patient exist Check Location.
+                locCompare = o1.getInvRecord().getLocation().compareTo(
+                            o2.getInvRecord().getLocation() );
+
+                if(locCompare < 0){ return -1;}   //o1 Location is less.
+                else if(locCompare > 0){return 1;} //o1 Location is greater
+            }
+
+            //3.NAME COMPARISON
+            int nameComp;
+            if(o1.getInvRecord().getOwner() != null &&
+                        o2.getInvRecord().getOwner() != null){
+                //Attached Patients are not null.  Compare Names
+                nameComp = o1.getInvRecord().getOwner().getLname().compareTo(
+                        o2.getInvRecord().getOwner().getLname());
+
+                if(nameComp < 0){return -1;}      //o1 Lname is less
+                else if(nameComp > 0){return 1;}    //o1 Lname is greater
+                else{
+                    //Last names are the same.  onto Fname.
+                    nameComp = o1.getInvRecord().getOwner().getFname().compareTo(
+                        o2.getInvRecord().getOwner().getFname());
+
+                    if(nameComp < 0){return -1;}  //o1 Fname is less
+                    else if(nameComp > 0 ){return 1;}//o1 Fname is greater
+                }
+            }
+
+            //Finally compare req indexes
+            return ( ( o1.getReqIndex() < o2.getReqIndex() ) ?  -1 :  1  );
+        }
+
+    }
+
+
+ /* Function to populate the tree view with information from the Data Model.
+     * 
+    */
+    private void popRequestTreeView(){
+        try{          
+            //Set the TreeCell Factory callback for the tree view
+            tview_reqs.setCellFactory( new ReqTreeCellFactory() );
+            //Set the Selecion mode for the tree view
+            tview_reqs.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            
+            //Organizing Tree Items
+            ReqTreeItem<Request> tiRoot 
+                    = new ReqTreeItem("Inventory Withdrawl Requests", 
+                        ReqTreeItem.ItemType.NOT_SPECIFIED);
+            ReqTreeItem<Request> tiPendPull 
+                    = new ReqTreeItem("Pending Pull", 
+                        ReqTreeItem.ItemType.PENDING_PULL);
+            ReqTreeItem<Request> tiPendAppr 
+                    = new ReqTreeItem("Pending Approval", 
+                        ReqTreeItem.ItemType.PENDING_APPROVAL);
+            ReqTreeItem<Request> tiCompleted 
+                    = new ReqTreeItem("Completed", 
+                        ReqTreeItem.ItemType.COMPLETED);
+           
+            /* Get the Lists of Requests from the Data Model, pass them to the 
+             * function responsible for making ReqTreeItem instances of them.
+             */
+            tiPendAppr.getChildren().addAll(
+                ReqTreeUtils.groupRequestsByCart( DataModel.getInstance().getPendingAppr() ));
+            log.debug("Pending approval items: " + tiPendAppr.getChildren().size() );
+            tiPendAppr.setExpanded(true);
+            
+            tiPendPull.getChildren().addAll(
+                ReqTreeUtils.groupRequestsByCart( DataModel.getInstance().getPendingPull() ));
+            tiPendPull.setExpanded(true);
+            log.debug("Pending pull items: " + tiPendPull.getChildren().size() );
+            
+            tiCompleted.getChildren().addAll(
+                ReqTreeUtils.groupRequestsByCart( DataModel.getInstance().getLastBatch()));
+            log.debug("Last batch items: " + tiCompleted.getChildren().size() );
+            
+            //Add the child items to the root item
+            tiRoot.getChildren().addAll(tiPendAppr,tiPendPull,tiCompleted);
+            tiRoot.setExpanded(true);
+            
+            //set the root item in the treeView
+            tview_reqs.setRoot(tiRoot);
+            
+        }catch(Exception myEx){
+            log.error(myEx);
+        }
+        
+    }
+    
+ 
+//Check that each memeber of the selection is an Entry and is a child of 
+        // the same cart.
+        /*
+        ReqTreeItem parentCart = 
+                (ReqTreeItem) reqTreeView.getTreeItem(indecies.get(0)).getParent();
+        for( Integer i : indecies){
+            ReqTreeItem rti = (ReqTreeItem) reqTreeView.getTreeItem(i);
+            if(rti.getParent().equals(parentCart) == false){
+                log.debug("entryMoveToNewCart: Item is not child of same cart as the other selections");
+                return;
+            }
+            
+            if(rti.orgzType != ReqTreeItem.ItemType.ENTRY){
+                log.debug("entryMoveToNewCart: A selected item is not an Entry");
+                return;
+            }
+        }
+        */
+
+
+        Long oldCartNum = 
+                ((Request) reqTreeView.getTreeItem(indecies.get(0)).getValue())
+                .getCartnum();
+
+        ReqTreeItem parentCart = 
+            (ReqTreeItem) reqTreeView.getTreeItem(indecies.get(0)).getParent();
+
+
+        //Check that the vial request pane is not null
+        if(vialRequestsPane == null){
+            //inform user
+            ta_info.setText("The vial requests pane failed to initialize "
+                    + "at startup.  Either the FXML file is missing from the"
+                    + "jar, or the components of the pane could not be "
+                    + "initialized.");
+            log.debug("vialRequestPane is null.");
+            //return with no changes being made to swap pane
+            return;
+        }
+        
+        //Check that the swap pane has child nodes.
+        if(swapPane.getChildren().size() > 0){
+            //Check that the child is not already the Request TreeView
+            if(swapPane.getChildren().get(0).equals(vialRequestsPane)){
+                log.debug("Vial Requsts Pane is already showing.");
+                return;
+            }else{
+                //Remove the existing child nodes.
+                log.debug("Removing child nodes from swapPane.");
+                swapPane.getChildren().remove(0, swapPane.getChildren().size());
+            }
+        }
+        
+        log.debug("Adding the vial requests pane to the swap pane.");
+        swapPane.getChildren().add(vialRequestsPane);
+
+    
+    private void swapPaneChange(AnchorPane toPane){
+        //Check that the vial request pane is not null
+        if(toPane == null){
+            //inform user
+            ta_info.setText("The swap pane failed to initialize "
+                    + "at startup.  Either the FXML file is missing from the"
+                    + "jar, or the components of the pane could not be "
+                    + "initialized.");
+            log.debug("Swap pane is null.");
+            //return with no changes being made to swap pane
+            return;
+        }
+        
+        //Check that the swap pane has child nodes.
+        if(swapPane.getChildren().size() > 0){
+            //Check that the child is not already the pane being swapped
+            if(swapPane.getChildren().get(0).equals(toPane)){
+                log.debug("The swap pane to be switched to is already showing.");
+                return;
+            }else{
+                //Remove the existing child nodes.
+                log.debug("Removing child nodes from current swapPane.");
+                //Do removal and addition in the swipe off method
+                swapPaneSwipeOff(toPane);
+                //swapPane.getChildren().remove(0, swapPane.getChildren().size());
+            }
+        }else{
+            //Just add the new panel.
+            log.debug("Adding the new pane to the swap pane.");
+            swapPane.getChildren().add(toPane);
+        }
+
+        
+    }
+    
+
+    
+    private void swapPaneSwipeOff(final Node toPane){
+        final Node aniPane = (Node) swapPane.getChildren().get(0);
+        double x = aniPane.getBoundsInParent().getMinX();
+        double y = aniPane.getBoundsInParent().getMinY();
+        double h = aniPane.getBoundsInParent().getHeight();
+        double w = aniPane.getBoundsInParent().getWidth();
+        
+        Rectangle clipRect = new Rectangle(x,y,w,h);
+        
+        aniPane.setClip(clipRect);
+        
+        //Setup Keyvalue for value transions.
+        KeyValue kvLeftClip = new KeyValue(clipRect.widthProperty(), 0.0);
+        KeyValue kvLeftPane = new KeyValue(aniPane.translateXProperty(), -w);
+        //Setup keyframe in which to do the value transition
+        KeyFrame kfLeftSwipe = new KeyFrame(Duration.millis(250), kvLeftClip, kvLeftPane);
+        
+        //Setup timeline to do the animation
+        Timeline tLeftSwipe = new Timeline();
+        tLeftSwipe.setCycleCount(1);
+        tLeftSwipe.setAutoReverse(true);
+        
+        tLeftSwipe.getKeyFrames().add(kfLeftSwipe);
+        
+        //Use the callback to complete the action of removing the child panels
+        // and adding a new one.
+        tLeftSwipe.setOnFinished(new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent t) {
+                //remove all the children from the swapPane
+                swapPane.getChildren().remove(0, swapPane.getChildren().size());
+                
+                //add the new view
+                log.debug("Adding the new pane to the swap pane.");
+                swapPane.getChildren().add(toPane);
+                
+                //set the clipping to null for the animated node
+                aniPane.setClip(null);
+                aniPane.setTranslateX(0);
+            }
+        } );
+        
+        
+        tLeftSwipe.play();
+        
+        
+        log.debug("animation done.");
+        
+    }
+    
+
+
+            /*
+            //clear tht title
+            StringBuilder title = new StringBuilder();
+            StringBuilder cname = new StringBuilder();
+            
+            //get data from the first Request item in the cart.
+            Request r = (Request) requestsByCart.get(cartNumber).get(0).getValue();
+            //Make special name string from requestor name and sb user
+            cname.append(r.getRname())
+                 .append(" (").append(r.getSbuser()).append(")");
+            //Make the cart title
+            title.append( String.format("%1$-40.40s",cname.toString() ) );
+            title.append( String.format("%1$-8.8s %2$-4tY-%2$-2tm-%2$-2td",
+                    r.getRmdest(),r.getDatesub() ));
+            */
+

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" fx:id="requestsPane" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml" fx:controller="manreq.ReqTreeViewController">
+  <children>
+    <TreeView fx:id="reqTreeView" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <stylesheets>
+        <URL value="@resources/reqtreeview.css" />
+      </stylesheets>
+    </TreeView>
+    <!-- Dummy nodes to instantiate the context menus -->
+    <Label visible="false">
+      <contextMenu>
+        <ContextMenu fx:id="reqCartConMen">
+          <items>
+            <MenuItem onAction="#cartMarkApproved" text="Mark Approved" />
+            <MenuItem onAction="#cartMarkPulled" text="Mark Pulled" />
+          </items>
+        </ContextMenu>
+      </contextMenu>
+    </Label>
+    <Label visible="false">
+      <contextMenu>
+        <ContextMenu fx:id="reqEntryConMen">
+          <items>
+            <MenuItem onAction="#entryEdit" text="Edit Entry" />
+            <MenuItem onAction="#entryMoveToNewCart" text="Move to Duplicate Cart" />
+            <MenuItem onAction="#entryRemove" text="Remove Entry" />
+          </items>
+        </ContextMenu>
+      </contextMenu>
+    </Label>
+    <Label visible="false">
+      <contextMenu>
+        <ContextMenu fx:id="reqCategoryConMen">
+          <items>
+            <MenuItem onAction="#categorySummary" text="Summary of Carts" />
+          </items>
+        </ContextMenu>
+      </contextMenu>
+    </Label>
+  </children>
+  <stylesheets>
+    <URL value="@resources/reqtreeview.css" />
+  </stylesheets>
+</AnchorPane>

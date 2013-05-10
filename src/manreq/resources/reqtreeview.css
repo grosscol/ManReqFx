@@ -1,0 +1,33 @@
+/*
+ * Empty Stylesheet file.
+ */
+
+.mainFxmlClass {
+
+}
+
+.tree-cell.dataChanged{
+    -fx-text-fill: red;
+}
+
+.request-tree-view {
+    /*  font-family:"Courier New",Courier,monospace; */
+    /* -fx-font-family: monospace; */
+}
+
+.tree-cell {
+    /*  font-family:"Courier New",Courier,monospace; */
+    -fx-font-family: monospace;
+    -fx-font-size: 10;
+    -fx-font-style: normal;
+    -fx-text-fill: black;
+}
+
+/* Override the TreeCell selected pseudo class */
+.tree-cell:selected{
+    /* Dark grey background */
+    -fx-background-color: #a9a9a9;
+    -fx-text-fill: white;
+   
+}
+
