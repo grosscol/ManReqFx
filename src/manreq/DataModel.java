@@ -6,7 +6,9 @@ package manreq;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -511,10 +513,20 @@ public class DataModel {
         this.pendingIng = pendingIng;
     }
     
+    /* Get unmodifiable map of the requests that have had changes logged.
+     * The returned map has the backed request as the key and the modified
+     * request as the value.
+     */
     public Map<Request,Request> getReadOnlyRequestChanges(){
         Map<Request,Request> rrMap = new LinkedHashMap<>();
         
-        return rrMap;
+        //For each index in the modded request, get the corresponding entry
+        //from the backed requests.  Put them in a table as backed, modded.
+        for (Long mapKey : moddedReqs.keySet()) {
+            rrMap.put(backedReqs.get(mapKey), moddedReqs.get(mapKey));
+        }
+
+        return Collections.unmodifiableMap(rrMap);
     }
             
     

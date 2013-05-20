@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -487,14 +488,37 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         //Set the data isDataModified to false
         this.isDataModified.set(false);
         
+        //Remove carts that have no nodes.
+        
+        
         //Undo changes:
         /* Find the destination of the item.  
          * Make the UI match the destination.
          * Restore the old data.
          */
         
-        //For each modified item:
+        //Get map of original values, modded (current) values
+        Map modMap = DataModel.getInstance().getReadOnlyRequestChanges();
+        //For each original request
 
+        
+        for(Object orig : modMap.keySet()){
+            //cast to correct type
+            Request origReq = (Request) orig;
+            //Find the first tree entry where the cartnumber is the same as the
+            //original cart number
+            ReqTreeItem dest = null;
+            if(origReq.getDatepull() != null){
+                //Search Completed
+            }else if(origReq.getDateappr() != null){
+                //Search Pending Pull
+            }else{
+                //Search Pending Approval
+            }
+            
+            
+        }
+        
         //reset all the nodes to not modified flag.
         resetAllChildItemsIsModified(
             (ReqTreeItem) reqTreeView.getRoot()
@@ -502,6 +526,33 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         //force rerender. Kluge.
         reqTreeView.getRoot().setExpanded(false);
         reqTreeView.getRoot().setExpanded(true);
+    }
+    
+    //Search one child of all the children of the start node.
+    //Designed to be used on the Completed, Pending Appr, or Pending Pull nodes.
+    //Will return the PARENT of the first item with a matching cart num
+    private ReqTreeItem findCartNumInTree(ReqTreeItem start, Long findMe){
+        ReqTreeItem rti;
+        
+        //Check through the children of the node
+        for( Object levOne : start.getChildren() ){
+            //Check that the node has children (not leaf)
+            if(  ((ReqTreeItem) levOne).isLeaf() == false ){
+                //ugly ugly casting
+                ReqTreeItem levTwo = 
+                        (ReqTreeItem) ((ReqTreeItem) levOne).getChildren().get(0);
+                //check that the value is not null, is a ReqTreeItem, and
+                // has the correct cart number.
+                if( levTwo.getValue() != null &&
+                     levTwo.getValue() instanceof ReqTreeItem &&
+                    ((Request) levTwo.getValue()).getCartnum() == findMe ){
+                    //Return the parent of the found ReqTreeItem
+                    return (ReqTreeItem) levOne;
+                }
+            }
+        }
+        
+        return null;
     }
     
     /* Go throught the reqTreeView, and reset the value of he property  
