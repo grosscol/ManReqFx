@@ -130,6 +130,8 @@ public class DataModel {
     /* Backup a Request entity to map requests prior to making a change.
      * Use this list prior to making changes to the database to check if the
      * database has been changed from what this client considers the original.
+     * 
+     * Use clone() to backup.  Use reference copy to track.
     */
     public void backupRequest(Request req){
         //Don't do anything with null input
@@ -137,13 +139,17 @@ public class DataModel {
         
         //Check that the Request is NOT already in the Map
         if( backedReqs.containsKey(req.getReqIndex()) == false ){
-            backedReqs.put(req.getReqIndex(), req);
+            backedReqs.put(req.getReqIndex(), (Request) req.clone());
         }
+        
+        //Also make a reference copy in the moddedReqs to track the current obj
+        moddedReqs.put(req.getReqIndex(), req);
+        
     }
     
     /* For an entry to be modified in the database it needs to be submitted to 
      * the data model.  This will be checked against the backup Request list 
-     * prior to changes being made.
+     * prior to changes being made. DEPRECATED
     */
     public void submitAlteredRequest(Request req){
         //Don't do anything with null input
@@ -152,7 +158,7 @@ public class DataModel {
         
         //If present, replace the pre-existing entry. Otherwise a new entry
         //will be created via clone so it is separate from the current instance.
-        moddedReqs.put(req.getReqIndex(), (Request) req.clone());
+        moddedReqs.put(req.getReqIndex(), req);
     }
     
     // Query methods
