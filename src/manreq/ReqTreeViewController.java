@@ -563,27 +563,24 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     //Designed to be used on the Completed, Pending Appr, or Pending Pull nodes.
     //Will return the PARENT of the first item with a matching cart num
     private ReqTreeItem findParentOfCartNum(ReqTreeItem start, Long findMe){
-        ReqTreeItem rti;
+        Iterator itt = start.getChildren().iterator();
+        ReqTreeItem retVal = null;
         
-        //Check through the children of the node
-        for( Object levOne : start.getChildren() ){
-            //Check that the node has children (not leaf)
-            if(  ((ReqTreeItem) levOne).isLeaf() == false ){
-                //ugly ugly casting
-                ReqTreeItem levTwo = 
-                        (ReqTreeItem) ((ReqTreeItem) levOne).getChildren().get(0);
-                //check that the value is not null, is a ReqTreeItem, and
-                // has the correct cart number.
-                if( levTwo.getValue() != null &&
-                     levTwo.getValue() instanceof ReqTreeItem &&
-                    ((Request) levTwo.getValue()).getCartnum() == findMe ){
-                    //Return the parent of the found ReqTreeItem
-                    return (ReqTreeItem) levOne;
-                }
+        while(itt.hasNext()){
+            ReqTreeItem rti = (ReqTreeItem) itt.next();
+            //if this is it, return
+            if( ((Request) rti.getValue()).getCartnum() == findMe)
+            { 
+                retVal = (ReqTreeItem) rti.getParent(); 
+            }else{
+                //make a recursive call
+                retVal =  findParentOfCartNum(rti, findMe) ;
             }
         }
         
-        return null;
+        //Finally return the final over write of the retVal
+        return retVal;
+
     }
     
     private ReqTreeItem findTreeItemWithValue(ReqTreeItem start, Request val){
