@@ -539,7 +539,13 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             if(destParent == null){
                 
             }else{
-                //Simply move the entry to the 
+                //Simply move the entry to the destination
+                //remove itself from the parent
+                source.getParent().getChildren().remove(source);
+                //add itself to the destination
+                destParent.getChildren().add(source);
+                //change the value to the original request object
+                source.setValue(orig);
             }
             
         }
@@ -582,20 +588,21 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     
     private ReqTreeItem findTreeItemWithValue(ReqTreeItem start, Request val){
         Iterator itt = start.getChildren().iterator();
+        ReqTreeItem retVal = null;
         while(itt.hasNext()){
             ReqTreeItem rti = (ReqTreeItem) itt.next();
             //if this is it, return
             if(rti.getValue() == val)
             { 
-                return rti; 
+                retVal = rti; 
             }else{
                 //make a recursive call
-                return ( findTreeItemWithValue(rti, val) );
+                retVal =  findTreeItemWithValue(rti, val) ;
             }
         }
         
-        //if all else fails, return null
-        return null;
+        //Finally return the final over write of the retVal
+        return retVal;
     }
     
     private void removeLeafNonValueItems(ReqTreeItem start){
