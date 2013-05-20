@@ -80,6 +80,7 @@ public class DataModel {
     private Map<Long,Request> moddedReqs;
     //List of Requests that you would like to delete
     private List<Request> deleteMeReqs;
+
     
     //Constructor
     private DataModel(){
@@ -509,6 +510,13 @@ public class DataModel {
     private void setPendingIng(List<Ingress> pendingIng) {
         this.pendingIng = pendingIng;
     }
+    
+    public Map<Request,Request> getReadOnlyRequestChanges(){
+        Map<Request,Request> rrMap = new LinkedHashMap<>();
+        
+        return rrMap;
+    }
+            
     
     //This getter will allow the controller to listen to the Request arm of the DM.
     public BooleanProperty getIsRequestsBusy(){

@@ -487,6 +487,14 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         //Set the data isDataModified to false
         this.isDataModified.set(false);
         
+        //Undo changes:
+        /* Find the destination of the item.  
+         * Make the UI match the destination.
+         * Restore the old data.
+         */
+        
+        //For each modified item:
+
         //reset all the nodes to not modified flag.
         resetAllChildItemsIsModified(
             (ReqTreeItem) reqTreeView.getRoot()
