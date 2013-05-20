@@ -566,21 +566,28 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         Iterator itt = start.getChildren().iterator();
         ReqTreeItem retVal = null;
         
+        
         //Iterate until the end or until you hae something to return.
         while(itt.hasNext() && retVal == null){
             ReqTreeItem rti = (ReqTreeItem) itt.next();
+            Request rVal = (Request) rti.getValue();
+            
+            if(rVal != null){
+                log.debug(rVal.getCartnum() +" "+ findMe);
+            }
             //if this is it, return
-            if( rti.getValue() != null &&
-                ((Request) rti.getValue()).getCartnum() == findMe)
+            if( rVal != null &&
+                rVal.getCartnum().compareTo(findMe) == 0)
             { 
-                retVal = (ReqTreeItem) rti.getParent(); 
+                retVal = (ReqTreeItem) rti.getParent();
+                log.debug("Tree Item match found");
             }else{
                 //make a recursive call
                 retVal =  findParentOfCartNum(rti, findMe) ;
             }
         }
         
-        //Finally return the final over write of the retVal      
+        //Finally return the final over write of the retVal
         return retVal;
 
     }
@@ -593,12 +600,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             ReqTreeItem rti = (ReqTreeItem) itt.next();
             Request rVal = (Request) rti.getValue();
             
-            if(rVal != null){
-                Request r = (Request) rti.getValue();
-                if(r.getReqIndex() == val.getReqIndex()){
-                    log.debug(r.getReqIndex() +" "+val.getReqIndex());
-                }
-            }
             //if this is it, return
             if(rVal != null && rVal.getReqIndex() == val.getReqIndex())
             { 
