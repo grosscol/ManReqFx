@@ -84,6 +84,10 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     @FXML
     TreeView reqTreeView;
     
+    ReqTreeItem<Request> tiPendAppr;
+    ReqTreeItem<Request> tiCompleted;
+    ReqTreeItem<Request> tiPendPull;
+    
     @FXML
     AnchorPane requestsPane;
      
@@ -211,7 +215,9 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        //Populate the request tree view
         popRequestTreeView();
+        
         //Setup the stage for confirm/cancel
         confirmStage = new Stage(StageStyle.TRANSPARENT);
         confirmStage.initModality(Modality.WINDOW_MODAL);
@@ -269,13 +275,13 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             ReqTreeItem<Request> tiRoot 
                     = new ReqTreeItem("Inventory Withdrawl Requests", 
                         ReqTreeItem.ItemType.NOT_SPECIFIED);
-            ReqTreeItem<Request> tiPendPull 
+            tiPendPull 
                     = new ReqTreeItem("Pending Pull", 
                         ReqTreeItem.ItemType.PENDING_PULL);
-            ReqTreeItem<Request> tiPendAppr 
+            tiPendAppr 
                     = new ReqTreeItem("Pending Approval", 
                         ReqTreeItem.ItemType.PENDING_APPROVAL);
-            ReqTreeItem<Request> tiCompleted 
+            tiCompleted 
                     = new ReqTreeItem("Completed", 
                         ReqTreeItem.ItemType.COMPLETED);
            
@@ -488,8 +494,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         //Set the data isDataModified to false
         this.isDataModified.set(false);
         
-        //Remove carts that have no nodes.
-        
+        //Remove carts that have no nodes and no value
+        removeLeafNonValueItems((ReqTreeItem) reqTreeView.getRoot());
         
         //Undo changes:
         /* Find the destination of the item.  
@@ -500,22 +506,41 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         //Get map of original values, modded (current) values
         Map modMap = DataModel.getInstance().getReadOnlyRequestChanges();
         //For each original request
-
+        
         
         for(Object orig : modMap.keySet()){
             //cast to correct type
             Request origReq = (Request) orig;
-            //Find the first tree entry where the cartnumber is the same as the
-            //original cart number
-            ReqTreeItem dest = null;
+            
+            //get the corresponding, current request tree item
+            ReqTreeItem source = 
+                    findTreeItemWithValue(
+                        (ReqTreeItem) reqTreeView.getRoot(), 
+                        (Request) modMap.get(orig)
+                    );
+            
+            //Destination that the request will be re-inserted into.
+            ReqTreeItem destParent;
+            
+            //Search the appropriate branch
             if(origReq.getDatepull() != null){
                 //Search Completed
+                destParent = findParentOfCartNum(tiCompleted, origReq.getCartnum());
             }else if(origReq.getDateappr() != null){
                 //Search Pending Pull
+                destParent = findParentOfCartNum(tiPendPull, origReq.getCartnum());
             }else{
                 //Search Pending Approval
+                destParent = findParentOfCartNum(tiPendAppr, origReq.getCartnum());
             }
             
+            //if the destination is null, the entire cart has been moved, or
+            // the original cart no longer exists. Create new destination cart.
+            if(destParent == null){
+                
+            }else{
+                //Simply move the entry to the 
+            }
             
         }
         
@@ -531,7 +556,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     //Search one child of all the children of the start node.
     //Designed to be used on the Completed, Pending Appr, or Pending Pull nodes.
     //Will return the PARENT of the first item with a matching cart num
-    private ReqTreeItem findCartNumInTree(ReqTreeItem start, Long findMe){
+    private ReqTreeItem findParentOfCartNum(ReqTreeItem start, Long findMe){
         ReqTreeItem rti;
         
         //Check through the children of the node
@@ -553,6 +578,39 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         }
         
         return null;
+    }
+    
+    private ReqTreeItem findTreeItemWithValue(ReqTreeItem start, Request val){
+        Iterator itt = start.getChildren().iterator();
+        while(itt.hasNext()){
+            ReqTreeItem rti = (ReqTreeItem) itt.next();
+            //if this is it, return
+            if(rti.getValue() == val)
+            { 
+                return rti; 
+            }else{
+                //make a recursive call
+                return ( findTreeItemWithValue(rti, val) );
+            }
+        }
+        
+        //if all else fails, return null
+        return null;
+    }
+    
+    private void removeLeafNonValueItems(ReqTreeItem start){
+        Iterator itt = start.getChildren().iterator();
+        while(itt.hasNext()){
+            ReqTreeItem rti = (ReqTreeItem) itt.next();
+            //if it is a leaf, has no data value, and is not the root
+            if(rti.isLeaf() && 
+                    rti.getValue() == null && 
+                    rti.getParent() != null )
+            {
+                //Remove itself from the parent.
+                rti.getParent().getChildren().remove(rti);
+            }
+        }
     }
     
     /* Go throught the reqTreeView, and reset the value of he property  
