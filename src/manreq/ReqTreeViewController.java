@@ -178,13 +178,14 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         DataModel.getInstance().backupRequest(
                 ((Request) leafsToBeMoved.get(0).getValue() )
                 );
+        //TODO: do backups for all the items in the list.
 
-        //Modify the cart number on the first item.
+        //Modify the cart number on the first item after it has been backedup.
         ((Request) leafsToBeMoved.get(0).getValue() ).setCartnum(newCartNum);
 
         //Submit the request as isDataModified
-        DataModel.getInstance()
-                .submitAlteredRequest((Request) leafsToBeMoved.get(0).getValue());
+       // DataModel.getInstance()
+       //         .submitAlteredRequest((Request) leafsToBeMoved.get(0).getValue());
         
         //Set the controller's isDataModified property to true
         this.isDataModified.set(true);
@@ -536,7 +537,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             //if the destination is null, the entire cart has been moved, or
             // the original cart no longer exists. Create new destination cart.
             if(destParent == null){
-                
+                //TODO: Handle no destination found.
             }else{
                 //Simply move the entry to the destination
                 //remove itself from the parent
@@ -609,8 +610,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         }
         
         //Finally return the final over write of the retVal
-        if(retVal == null){log.debug("retNull");}
-        else{log.debug("ret not null");}
         return retVal;
     }
     
@@ -794,8 +793,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                 ( (Request) donor.getValue() ).setCartnum(aReq.getCartnum());
                 
                 //Submit the Request entity to the list of modifications
-                DataModel.getInstance()
-                        .submitAlteredRequest( (Request) donor.getValue() );
+                //DataModel.getInstance()
+                //        .submitAlteredRequest( (Request) donor.getValue() );
             }
             
             //Mark the donor as data changed.
