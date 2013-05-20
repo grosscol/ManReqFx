@@ -590,8 +590,16 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         //Continue until there is nothing left, or the return value is not null
         while(itt.hasNext() && retVal == null){
             ReqTreeItem rti = (ReqTreeItem) itt.next();
+            Request rVal = (Request) rti.getValue();
+            
+            if(rVal != null){
+                Request r = (Request) rti.getValue();
+                if(r.getReqIndex() == val.getReqIndex()){
+                    log.debug(r.getReqIndex() +" "+val.getReqIndex());
+                }
+            }
             //if this is it, return
-            if(rti.getValue() == val)
+            if(rVal != null && rVal.getReqIndex() == val.getReqIndex())
             { 
                 retVal = rti; 
             }else{
@@ -601,6 +609,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         }
         
         //Finally return the final over write of the retVal
+        if(retVal == null){log.debug("retNull");}
+        else{log.debug("ret not null");}
         return retVal;
     }
     

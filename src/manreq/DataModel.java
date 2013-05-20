@@ -149,8 +149,10 @@ public class DataModel {
         //Don't do anything with null input
         if(req == null){ return;}
         
-        //If present, replace the pre-existing entry
-        moddedReqs.put(req.getReqIndex(), req);
+        
+        //If present, replace the pre-existing entry. Otherwise a new entry
+        //will be created via clone so it is separate from the current instance.
+        moddedReqs.put(req.getReqIndex(), (Request) req.clone());
     }
     
     // Query methods
