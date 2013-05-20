@@ -511,13 +511,12 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         for(Object orig : modMap.keySet()){
             //cast to correct type
             Request origReq = (Request) orig;
+            Request currReq = (Request) modMap.get(origReq);
             
             //get the corresponding, current request tree item
             ReqTreeItem source = 
                     findTreeItemWithValue(
-                        (ReqTreeItem) reqTreeView.getRoot(), 
-                        (Request) modMap.get(orig)
-                    );
+                        (ReqTreeItem) reqTreeView.getRoot(), currReq );
             
             //Destination that the request will be re-inserted into.
             ReqTreeItem destParent;
@@ -580,10 +579,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             }
         }
         
-        //Finally return the final over write of the retVal
-        if(retVal == null){log.debug("Ret null");}
-        else{ log.debug("Ret Something");}
-        
+        //Finally return the final over write of the retVal      
         return retVal;
 
     }
