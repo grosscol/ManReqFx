@@ -559,17 +559,19 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         reqTreeView.getRoot().setExpanded(true);
     }
     
-    //Search one child of all the children of the start node.
+    //Search children of start.
     //Designed to be used on the Completed, Pending Appr, or Pending Pull nodes.
     //Will return the PARENT of the first item with a matching cart num
     private ReqTreeItem findParentOfCartNum(ReqTreeItem start, Long findMe){
         Iterator itt = start.getChildren().iterator();
         ReqTreeItem retVal = null;
         
-        while(itt.hasNext()){
+        //Iterate until the end or until you hae something to return.
+        while(itt.hasNext() && retVal == null){
             ReqTreeItem rti = (ReqTreeItem) itt.next();
             //if this is it, return
-            if( ((Request) rti.getValue()).getCartnum() == findMe)
+            if( rti.getValue() != null &&
+                ((Request) rti.getValue()).getCartnum() == findMe)
             { 
                 retVal = (ReqTreeItem) rti.getParent(); 
             }else{
@@ -579,6 +581,9 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         }
         
         //Finally return the final over write of the retVal
+        if(retVal == null){log.debug("Ret null");}
+        else{ log.debug("Ret Something");}
+        
         return retVal;
 
     }
@@ -586,7 +591,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     private ReqTreeItem findTreeItemWithValue(ReqTreeItem start, Request val){
         Iterator itt = start.getChildren().iterator();
         ReqTreeItem retVal = null;
-        while(itt.hasNext()){
+        //Continue until there is nothing left, or the return value is not null
+        while(itt.hasNext() && retVal == null){
             ReqTreeItem rti = (ReqTreeItem) itt.next();
             //if this is it, return
             if(rti.getValue() == val)
