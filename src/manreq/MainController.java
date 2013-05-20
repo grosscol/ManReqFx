@@ -138,6 +138,7 @@ public class MainController implements Initializable {
         if(currSwapPanelControl != null){
             currSwapPanelControl.commitEdits();
         }
+        log.debug("Handle Edits Complete.");
     }
     
     @FXML

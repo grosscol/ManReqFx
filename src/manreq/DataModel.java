@@ -56,7 +56,9 @@ public class DataModel {
     private BooleanProperty isBusyRequests;
     private BooleanProperty isBusyIngress;
     
+    //Track that return status of the last worker task from each branch.
     private Worker.State reqOpReturnStatus;
+    private Worker.State ingOpReturnStatus;
     
     /*Class variables specific to this program's operation */
     //List of requests pending approval
@@ -77,7 +79,7 @@ public class DataModel {
     //List of Requests that have been modified
     private Map<Long,Request> moddedReqs;
     //List of Requests that you would like to delete
-    private List<Long> deleteMeReqs;
+    private List<Request> deleteMeReqs;
     
     //Constructor
     private DataModel(){
@@ -87,9 +89,14 @@ public class DataModel {
         backedReqs = new LinkedHashMap<>();
         //initialize the modified list
         moddedReqs = new LinkedHashMap<>();
+        //initialze the deleteme list
+        deleteMeReqs = new ArrayList<>();
         //Set is Busy property of data model to false.
         isBusyRequests = new SimpleBooleanProperty(false);
         isBusyIngress = new SimpleBooleanProperty(false);
+        //Set thread worker status
+        reqOpReturnStatus = Worker.State.READY;
+        ingOpReturnStatus = Worker.State.READY;
     }
     
     //Setup EntityManagerFactory
@@ -359,8 +366,6 @@ public class DataModel {
     {
             @Override
             public void handle(WorkerStateEvent wse) {
-                //Worker succeeded.  Let there be rejoicing.
-
                 //Clear the backups of the items that are in the requests to be modded
                 for(Long l : moddedReqs.keySet()){
                     backedReqs.remove(l);
@@ -369,12 +374,20 @@ public class DataModel {
                 //Clear the requests to be modded.
                 moddedReqs.clear();
                 
+                //Clear the requets to be deleted.
+                deleteMeReqs.clear();
                 //Update the return status.
                 reqOpReturnStatus = wse.getSource().getState();
+                
+                //Get the exception
+                Throwable t = wse.getSource().getException();
                 
                 //Update the busy status of the DataModel. Controller should be
                 //listening to this.
                 isBusyRequests.set(false);
+                
+                //Debug
+                System.out.println("Worker Return Handler Complete.");
             }
         }
     
@@ -382,6 +395,7 @@ public class DataModel {
         //Don't run if isBusyRequests is already true
         if(isBusyRequests.get()){ return; }
         
+        log.debug("Commit requests changes started.");
         //Set busy to be true;
         isBusyRequests.set(true);
         
@@ -390,9 +404,10 @@ public class DataModel {
         //After validation that backups aren't different than the db, 
         // get the list of requests to change, and create a Task to do the db
         // update in the background.
-        List<Request> lr = new ArrayList<>(moddedReqs.values());
+        List<Request> lrMod = new ArrayList<>(moddedReqs.values());
+
         //This worker is a Task that will be doing the updates.
-        ReqModWorker rmw = new ReqModWorker(lr, emfactory.createEntityManager() );
+        RequestsWorker rmw = new RequestsWorker(lrMod, deleteMeReqs, emfactory.createEntityManager() );
         
         //Setup listeners to handle the result of the task.
         rmw.setOnSucceeded( new ReqReturnHandler() );
@@ -505,6 +520,16 @@ public class DataModel {
         return isBusyIngress;
     }
     
+    //This getter will allow the controller to check the return status of the last
+    // worker that returned;
+    public Boolean didRequestModSucceed(){
+        return Boolean.TRUE;
+    }
+    
+    public Boolean didIngressModSucceed(){
+        return Boolean.TRUE;
+    }
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -512,14 +537,16 @@ public class DataModel {
 /* Background worker to run on separate thread and execute updates to the database.
  */
 
-    class ReqModWorker extends Task<Boolean>{
+    class RequestsWorker extends Task<Boolean>{
         
         List<Request> reqsToBeMerged;
+        List<Request> reqsToBeDeleted;
         EntityManager entManager;
         
         //Constructor that takes a list of requests to merge
-        ReqModWorker(List<Request> lr, EntityManager em){
-            reqsToBeMerged = lr;
+        RequestsWorker(List<Request> lrMod, List<Request> lrDel, EntityManager em){
+            reqsToBeMerged = lrMod;
+            reqsToBeDeleted = lrDel;
             entManager = em;
         }
         
@@ -527,23 +554,31 @@ public class DataModel {
         protected Boolean call() throws Exception {
             //assume the call does not succeed. Set initila return value to false
             Boolean retVal = Boolean.FALSE;
-            //Immediately return false if the prerequisite inputs are false.
-            if(reqsToBeMerged == null){
-                return(retVal);
-            }
+            //Check that the entity manager exists and is open.
             if(entManager == null || entManager.isOpen() == false){
                 return(retVal);
             }
             
-            try{
 
+            try{
                 entManager.getTransaction().begin();
-                for (Request r : reqsToBeMerged) {
-                    //check that the backup copy is same as db copy.
-                    
-                    //Lock the entity and merge it (update the db).
-                    entManager.lock(r, LockModeType.WRITE);
-                    entManager.merge(r);
+                //Make the modifications to the database
+                if(reqsToBeMerged != null){
+                    for (Request r : reqsToBeMerged) {
+                        //check that the backup copy is same as db copy.
+
+                        //Lock the entity and merge it (update the db).
+                        //entManager.lock(r, LockModeType.WRITE);
+                        entManager.merge(r);
+                    }
+                }
+                //Make the deletes to the database
+                if(reqsToBeDeleted != null){
+                    for (Request r : reqsToBeDeleted){
+                        //Lock the entity and delete it
+                        //entManager.lock(r, LockModeType.WRITE);
+                        entManager.remove(r);
+                    }
                 }
 
                 //commit the transaction (all the updates)
@@ -556,7 +591,11 @@ public class DataModel {
                 retVal=Boolean.FALSE;
             }finally{
                 //Regardless of success or failure, close the entity manager.
-                entManager.close();
+                try{
+                //entManager.close();
+                }catch(Exception ex){
+                    System.out.println(ex);
+                }
             }
 
             this.updateMessage("Task call completed.");

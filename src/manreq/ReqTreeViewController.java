@@ -143,13 +143,17 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         //Get the old cart number hash
         Long oldCartNum = ((Request) selItem.getValue()).getCartnum();
         //Calculate a new half of the cart number for the date.
-        Long dateHash = new Long (new Date().hashCode());
+        //leading 32 bits are 0xffffffff mask to get 0x00000000
+        Long dateHash = new Long (new Date().hashCode()) & 0x00000000ffffffffL; 
         //Mask off half the old cart number. Replace it with new date hash code.
         Long newCartNum = (oldCartNum & 0x7fffffff00000000L) | dateHash;
 
-        log.debug("oldHash: "+String.format("%1$x", oldCartNum));
-        log.debug("dateHash:"+String.format("%1$x", dateHash));
-        log.debug("newHash: "+String.format("%1$x", newCartNum));
+        //debug
+        Long s1 = oldCartNum & 0x7fffffff00000000L;
+        log.debug("oldHash: "+String.format("%1$016x %1$d", oldCartNum));
+        log.debug("masked : "+String.format("%1$016x %1$d", s1));
+        log.debug("dateHash:"+String.format("%1$016x %1$d", dateHash));
+        log.debug("newHash: "+String.format("%1$016x %1$d", newCartNum));
 
         //Create new cart item with the same text as the original cart parentCart.orgzText
         ReqTreeItem dupCart = 
@@ -247,6 +251,9 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         //Add a listener for scene membership.  Allow the controller to track
         // when the scene is being shown.
         requestsPane.sceneProperty().addListener(new SceneMembershipListener() );
+        
+        //Add a listener to the Requests arm of the DataModel
+        
     }    
     
     /* Function to populate the tree view with information from Data Model.*/
@@ -447,12 +454,12 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             log.debug("setDisabled true");
             reqTreeView.setStyle("-fx-background-color: gray;");
             reqTreeView.requestLayout();
-            try {
-                //Do Comit work.
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                log.error(ex);
-            }
+
+            //This will return immediately.
+            DataModel.getInstance().commitRequestChanges();
+            
+            
+            //TODO: Move all post transaction work to listeners
             
             //if(commitWored){ alter the UI
             //if(commitFailed) notify user, alter the UI call cancel operation
@@ -1155,6 +1162,12 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
 
     }
    
+    
+    /* Listener to track if the panel is currently showing, and record that 
+     * state in a place that the main controller can observe.  The main panel 
+     * will make decisions about which controller to call based on which panel
+     * is showing.
+     */
     private class SceneMembershipListener implements ChangeListener<Scene>{
 
         @Override
@@ -1173,5 +1186,29 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                 isShowing.set(true);
             }
         }
+    }
+    
+    private class DataModelBusyListener implements ChangeListener<Boolean>{
+
+        @Override
+        public void changed(ObservableValue<? extends Boolean> obs, 
+            Boolean oldVal, Boolean newVal) {
+            if(oldVal == Boolean.FALSE && newVal == Boolean.TRUE){
+                //The DataWorker is now busy.
+                //TODO: Add Gray Overlay
+            }else if(oldVal == Boolean.TRUE && newVal == Boolean.FALSE){
+                //The Data Model Worker has returned.
+                if(DataModel.getInstance().didRequestModSucceed()){
+                    //Everything worked
+                    //UI should be up
+                }else{
+                    //Transaction failed
+                }
+               
+             }
+            //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
     }
 }
