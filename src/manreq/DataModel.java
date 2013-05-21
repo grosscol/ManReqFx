@@ -147,19 +147,7 @@ public class DataModel {
         
     }
     
-    /* For an entry to be modified in the database it needs to be submitted to 
-     * the data model.  This will be checked against the backup Request list 
-     * prior to changes being made. DEPRECATED
-    */
-    public void submitAlteredRequest(Request req){
-        //Don't do anything with null input
-        if(req == null){ return;}
-        
-        
-        //If present, replace the pre-existing entry. Otherwise a new entry
-        //will be created via clone so it is separate from the current instance.
-        moddedReqs.put(req.getReqIndex(), req);
-    }
+
     
     // Query methods
     public List<Request> doNamed_Request(String queryName){
