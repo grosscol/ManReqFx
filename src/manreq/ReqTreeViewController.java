@@ -488,6 +488,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         
     }
     
+    //Function to put all the UI elements back in place.
     @Override
     public void cancelEdits(){
         //Set the data isDataModified to false
@@ -567,8 +568,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             
             //set the value of the parent (cart) to null to force recalc of the
             //text for the cart.  This will update it if neccissary.
-            
-            
+            source.getParent().setValue(null);
         }
         
         //reset all the nodes to not modified flag.
@@ -578,6 +578,9 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         //force rerender. Kluge.
         reqTreeView.getRoot().setExpanded(false);
         reqTreeView.getRoot().setExpanded(true);
+        
+        //Notify the Data Model that all the modified elements are back in place
+        DataModel.getInstance().clearBackupRequests();
     }
     
     //Search children of start.

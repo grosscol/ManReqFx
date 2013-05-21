@@ -162,6 +162,13 @@ public class DataModel {
         backupRequest(req, Boolean.FALSE);
     }
     
+    // Function to call that will tell the data model that all the modifications
+    // need to be cleared.  Also clears the modded requests list.
+    public void clearBackupRequests(){
+        moddedReqs.clear();
+        backedReqs.clear();
+    }
+    
     // Query methods
     public List<Request> doNamed_Request(String queryName){
         //The request list to return.  Default to null.
