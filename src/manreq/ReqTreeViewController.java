@@ -540,9 +540,10 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             //if the destination is null, the entire cart has been moved, or
             // the original cart no longer exists. Create new destination cart.
             if(destParent == null){
-                //Create a new destination based on the original request state.
+                //Create a new destination cart
                 destParent = new ReqTreeItem(ReqTreeItem.ItemType.CART);   
-                //Add the destination to the proper category.
+                //Add the destination to the proper category based on the 
+                // original Request
                 if(origReq.getDatepull() != null){
                     tiCompleted.getChildren().add(destParent);
                 }else if(origReq.getDateappr() != null){
@@ -650,8 +651,11 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                     rti.getValue() == null && 
                     rti.getParent() != null )
             {
-                //Remove itself from the parent.
-                rti.getParent().getChildren().remove(rti);
+                //Remove itself from the collection of children using iterator.
+                itt.remove();
+            }else{
+                //Do recursive call
+                removeLeafNonValueItems(rti);
             }
         }
     }
