@@ -493,10 +493,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     public void cancelEdits(){
         //Set the data isDataModified to false
         this.isDataModified.set(false);
-        
-        //Remove carts that have no nodes and no value
-        removeLeafNonValueItems((ReqTreeItem) reqTreeView.getRoot());
-        
+             
         //Undo changes:
         /* Find the destination of the item.  
          * Make the UI match the destination.
@@ -571,16 +568,22 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             source.getParent().setValue(null);
         }
         
+        //Remove carts that have no nodes and no value
+        removeLeafNonValueItems((ReqTreeItem) reqTreeView.getRoot());
+           
         //reset all the nodes to not modified flag.
         resetAllChildItemsIsModified(
             (ReqTreeItem) reqTreeView.getRoot()
             );
+
+        //Notify the Data Model that all the modified elements are back in place
+        DataModel.getInstance().clearBackupRequests();
+        
         //force rerender. Kluge.
         reqTreeView.getRoot().setExpanded(false);
         reqTreeView.getRoot().setExpanded(true);
         
-        //Notify the Data Model that all the modified elements are back in place
-        DataModel.getInstance().clearBackupRequests();
+        
     }
     
     //Search children of start.
