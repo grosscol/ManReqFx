@@ -133,7 +133,7 @@ public class DataModel {
      * 
      * Use clone() to backup.  Use reference copy to track.
     */
-    public void backupRequest(Request req){
+    public void backupRequest(Request req, Boolean deleted){
         //Don't do anything with null input
         if(req == null){ return;}
         
@@ -142,12 +142,21 @@ public class DataModel {
             backedReqs.put(req.getReqIndex(), (Request) req.clone());
         }
         
-        //Also make a reference copy in the moddedReqs to track the current obj
-        moddedReqs.put(req.getReqIndex(), req);
+        //If the item to be backed up is being deleted, store null instead of 
+        // a reference to the request object.
+        if(deleted){
+            moddedReqs.put(req.getReqIndex(), null);
+        }else{
+            //Make a reference copy in the moddedReqs to track the current obj
+            moddedReqs.put(req.getReqIndex(), req);
+        }
+        
         
     }
     
-
+    public void backupRequest(Request req){
+        backupRequest(req, Boolean.FALSE);
+    }
     
     // Query methods
     public List<Request> doNamed_Request(String queryName){
