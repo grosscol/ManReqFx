@@ -132,8 +132,12 @@ public class DataModel {
      * database has been changed from what this client considers the original.
      * 
      * Use clone() to backup.  Use reference copy to track.
+     * 
+     * intentToDelete indicates that the request will be backed up in a manner
+     * that expects the calling code to remove the original.  This function will
+     * not do the deletion of the request.
     */
-    public void backupRequest(Request req, Boolean deleted){
+    public void backupRequest(Request req, Boolean intentToDelete){
         //Don't do anything with null input
         if(req == null){ return;}
         
@@ -144,7 +148,7 @@ public class DataModel {
         
         //If the item to be backed up is being deleted, store null instead of 
         // a reference to the request object.
-        if(deleted){
+        if(intentToDelete){
             moddedReqs.put(req.getReqIndex(), null);
         }else{
             //Make a reference copy in the moddedReqs to track the current obj
