@@ -166,7 +166,9 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         
         //index of parent cart in category
         int j = parentCart.getParent().getChildren().indexOf(parentCart);
-        //add the duplicated cart to the children of the parent of the parentCart
+        
+        //Add the duplicated cart to the children of the parent of the parentCart
+        //Basically make a duplicated cart under the same node as the original.
         parentCart.getParent().getChildren().add(j, dupCart);
          
         /*Make a backup of the first Request item before it is isDataModified.
@@ -178,19 +180,15 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         DataModel.getInstance().backupRequest(
                 ((Request) leafsToBeMoved.get(0).getValue() )
                 );
-        //TODO: do backups for all the items in the list.
 
         //Modify the cart number on the first item after it has been backedup.
         ((Request) leafsToBeMoved.get(0).getValue() ).setCartnum(newCartNum);
 
-        //Submit the request as isDataModified
-       // DataModel.getInstance()
-       //         .submitAlteredRequest((Request) leafsToBeMoved.get(0).getValue());
-        
         //Set the controller's isDataModified property to true
         this.isDataModified.set(true);
         
         //Move each item in the selection using acceptEntryFromOtherCart method.
+        //This method will handle backups and changing cartNum information.
         for(int i=0; i < leafsToBeMoved.size(); i++){
             dupCart.acceptEntryFromOtherCart(leafsToBeMoved.get(i));
         }
