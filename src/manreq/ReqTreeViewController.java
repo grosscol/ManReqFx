@@ -280,20 +280,20 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                         List<ReqTreeItem> si = reqTreeView.getSelectionModel().getSelectedItems();
                         //return immediately if none are selected.
                         if(si.size()<1){return;}
-                        
+                        //Construct the text to add to the infoTextArea.
                         StringBuilder sb = new StringBuilder();
                         for(ReqTreeItem r : si){
                             if(r.getValue() == null){
-                                sb.append("Cart").append(r.getOrgzText());
+                                sb.append("Cart: ").append(r.getOrgzText());
+
                             }else{
-                                sb.append("Entry ");
+                                sb.append("Entry CartNum: ");
                                 sb.append( ((Request) r.getValue()).getCartnum() );
                             }
+                            sb.append('\n');
                         }
-                        
-                        //change.
-                        //To change body of generated methods, choose Tools | Templates.
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        //Set info text for the user
+                        infoTextOut.setText(sb.toString());
                     }
                         
                     });
@@ -628,9 +628,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             ReqTreeItem rti = (ReqTreeItem) itt.next();
             Request rVal = (Request) rti.getValue();
             
-            if(rVal != null){
-                log.debug(rVal.getCartnum() +" "+ findMe);
-            }
             //if this is it, return
             if( rVal != null &&
                 rVal.getCartnum().compareTo(findMe) == 0)
@@ -1179,6 +1176,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                     if(checkSelectionHomogeneity() == false){
                         return;
                     }
+                    
                     //Begin drag-and-drop gesture()
                     Dragboard db = c.startDragAndDrop(TransferMode.MOVE);
 
@@ -1255,15 +1253,24 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                     if(dEvt.getDragboard().hasContent(dFmt)){
                         //Get the ReqTreeItem associated with this Cell
                         ReqTreeItem mti = (ReqTreeItem) c.getTreeItem() ;
-                        //Get the MyTreeitem associated with the source of the drag
-                        ReqTreeItem di = ((ReqTreeCell) dEvt.getGestureSource() ).getReqTreeItem();
-                        //Do transfer from donor tree item to this one.
-                        if( mti.acceptEntryFromOtherCart(di) == true){
-                            //accept entry succeeded. 
-                            //Set controller's isDataModified propert
-                            isDataModified.set(true);
-                        }
                         
+                        //Get the MyTreeitem associated with the source of the drag
+                        //ReqTreeItem di = ((ReqTreeCell) dEvt.getGestureSource() ).getReqTreeItem();
+                        
+                        //Get the selected items, and do drag of all of them.
+                        //The selectin should have been checked when drag started.
+                        List<ReqTreeItem> lri = 
+                                reqTreeView.getSelectionModel().getSelectedItems();
+                        
+                        for( ReqTreeItem di : lri){
+                            //Do transfer from donor tree item to this one.
+                            if( mti.acceptEntryFromOtherCart(di) == true){
+                                //accept entry succeeded. 
+                                //Set controller's isDataModified propert
+                                isDataModified.set(true);
+                            }
+                        }
+
                         //Set TreeView selection to none
                         c.getTreeView().getSelectionModel().clearSelection();
                     }
@@ -1290,27 +1297,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                     dEvt.consume();
                 }
             });
-            /*
-            c.setOnMouseClicked(new EventHandler<MouseEvent>(){
-                @Override
-                public void handle(MouseEvent t) {
-                    if(c.isEmpty()){return;}
-                    //get cart info and display in app info text field.
-                    if( c.getTreeItem().isLeaf() && c.getItem() != null ){
-                        infoTextOut.setText("CartNum: "+ c.getItem().getCartnum());
-                    }else if(c.getTreeItem().getChildren().size() > 0 &&
-                            c.getTreeItem().getChildren().get(0).isLeaf()){
-                        infoTextOut.setText("CartNum: "+ 
-                                c.getTreeItem().getChildren().get(0)
-                                .getValue().getCartnum() );
-                    }else{
-                        //clear text info area
-                        infoTextOut.clear();
-                    }
-                }
-            }
-                    ); */
-            
+           
             return c;
         } 
     }
