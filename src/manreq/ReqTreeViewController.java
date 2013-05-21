@@ -19,6 +19,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -269,6 +270,33 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             reqTreeView.setCellFactory( new ReqTreeCellFactory() );
             //Set the Selecion mode for the tree view
             reqTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            //Add a listener for selection changes
+            reqTreeView.getSelectionModel().getSelectedItems().addListener(
+                    new ListChangeListener<ReqTreeItem>(){
+
+                    @Override
+                    public void onChanged(ListChangeListener.Change<? extends ReqTreeItem> change) {
+                        //Get the selected items
+                        List<ReqTreeItem> si = reqTreeView.getSelectionModel().getSelectedItems();
+                        //return immediately if none are selected.
+                        if(si.size()<1){return;}
+                        
+                        StringBuilder sb = new StringBuilder();
+                        for(ReqTreeItem r : si){
+                            if(r.getValue() == null){
+                                sb.append("Cart").append(r.getOrgzText());
+                            }else{
+                                sb.append("Entry ");
+                                sb.append( ((Request) r.getValue()).getCartnum() );
+                            }
+                        }
+                        
+                        //change.
+                        //To change body of generated methods, choose Tools | Templates.
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+                        
+                    });
             
             //Organizing Tree Items
             ReqTreeItem<Request> tiRoot 
@@ -1262,6 +1290,26 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                     dEvt.consume();
                 }
             });
+            /*
+            c.setOnMouseClicked(new EventHandler<MouseEvent>(){
+                @Override
+                public void handle(MouseEvent t) {
+                    if(c.isEmpty()){return;}
+                    //get cart info and display in app info text field.
+                    if( c.getTreeItem().isLeaf() && c.getItem() != null ){
+                        infoTextOut.setText("CartNum: "+ c.getItem().getCartnum());
+                    }else if(c.getTreeItem().getChildren().size() > 0 &&
+                            c.getTreeItem().getChildren().get(0).isLeaf()){
+                        infoTextOut.setText("CartNum: "+ 
+                                c.getTreeItem().getChildren().get(0)
+                                .getValue().getCartnum() );
+                    }else{
+                        //clear text info area
+                        infoTextOut.clear();
+                    }
+                }
+            }
+                    ); */
             
             return c;
         } 
