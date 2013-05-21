@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -504,21 +504,28 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         
         //Get map of original values, modded (current) values
         Map modMap = DataModel.getInstance().getReadOnlyRequestChanges();
-        //For each original request
         
         
+        //For each original request object in the modded list.
         for(Object orig : modMap.keySet()){
             //cast to correct type
             Request origReq = (Request) orig;
             Request currReq = (Request) modMap.get(origReq);
             
-            //get the corresponding, current request tree item
-            ReqTreeItem source = 
-                    findTreeItemWithValue(
-                        (ReqTreeItem) reqTreeView.getRoot(), currReq );
-            
+            //The tree item that will be moved and changed.
+            ReqTreeItem source;
             //Destination that the request will be re-inserted into.
             ReqTreeItem destParent;
+            
+            //If the currReq is null, the entry was deleted.
+            if(currReq == null){
+                //make a new TreeItem based on the original Request
+                source = new ReqTreeItem(origReq);
+            }else{
+                //get the corresponding, current request tree item
+                source =  findTreeItemWithValue(
+                            (ReqTreeItem) reqTreeView.getRoot(), currReq );
+            }
             
             //Search the appropriate branch
             if(origReq.getDatepull() != null){
@@ -535,16 +542,32 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             //if the destination is null, the entire cart has been moved, or
             // the original cart no longer exists. Create new destination cart.
             if(destParent == null){
-                //TODO: Handle no destination found.
-            }else{
-                //Simply move the entry to the destination
+                //Create a new destination based on the original request state.
+                destParent = new ReqTreeItem(ReqTreeItem.ItemType.CART);   
+                //Add the destination to the proper category.
+                if(origReq.getDatepull() != null){
+                    tiCompleted.getChildren().add(destParent);
+                }else if(origReq.getDateappr() != null){
+                    tiPendPull.getChildren().add(destParent);
+                }else{
+                    tiPendAppr.getChildren().add(destParent);
+                }
+            }
+            
+            if(source.getParent() != null){
                 //remove itself from the parent
                 source.getParent().getChildren().remove(source);
-                //add itself to the destination
-                destParent.getChildren().add(source);
-                //change the value to the original request object
-                source.setValue(orig);
             }
+                        
+            //add itself to the destination
+            destParent.getChildren().add(source);
+            
+            //change the value to the original request object
+            source.setValue(orig);
+            
+            //set the value of the parent (cart) to null to force recalc of the
+            //text for the cart.  This will update it if neccissary.
+            
             
         }
         
@@ -768,6 +791,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             //If this is the first item added to the Cart, Rewrite the title
             if(this.getChildren().size() == 1){
                 //setValue to null should trigger a value changed call.
+                //The TreeItem should sort out its text based on it's value
+                //and children.
                 this.setValue(null);
             }
             
