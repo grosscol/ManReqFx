@@ -432,7 +432,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         List<ReqTreeItem> selected = reqTreeView.getSelectionModel().getSelectedItems();
         
         if(selected.size() > 0){
-            log.debug("Selected List has more than zero items.");
             //Get parent of the first item to check against the rest
             TreeItem parent = selected.get(0).getParent();
             
@@ -1254,25 +1253,26 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                         //Get the ReqTreeItem associated with this Cell
                         ReqTreeItem mti = (ReqTreeItem) c.getTreeItem() ;
                         
-                        //Get the MyTreeitem associated with the source of the drag
-                        //ReqTreeItem di = ((ReqTreeCell) dEvt.getGestureSource() ).getReqTreeItem();
-                        
-                        //Get the selected items, and do drag of all of them.
-                        //The selectin should have been checked when drag started.
-                        List<ReqTreeItem> lri = 
-                                reqTreeView.getSelectionModel().getSelectedItems();
-                        
-                        for( ReqTreeItem di : lri){
-                            //Do transfer from donor tree item to this one.
-                            if( mti.acceptEntryFromOtherCart(di) == true){
-                                //accept entry succeeded. 
-                                //Set controller's isDataModified propert
-                                isDataModified.set(true);
-                            }
+                        //make a snapshot of the selected items. The selected items list will
+                        //change with each move.  The snapshot should preserve the list of items
+                        //that need to be moved.
+                        List<ReqTreeItem> lri = reqTreeView.getSelectionModel().getSelectedItems();
+                        List<ReqTreeItem> snapshot = new LinkedList<>();
+                        for(ReqTreeItem rti : lri){
+                            snapshot.add(rti);
                         }
-
-                        //Set TreeView selection to none
-                        c.getTreeView().getSelectionModel().clearSelection();
+                        
+                        Boolean didAnyWork = false;
+                        Boolean didItWork;
+                        for( ReqTreeItem di : snapshot){
+                            //Keep track of any true result from acceptEntry function
+                            didItWork = mti.acceptEntryFromOtherCart(di);
+                            didAnyWork = didAnyWork || didItWork;
+                        }
+                        //If any of the moves worked, set data modified flag to true
+                        if(didAnyWork == true){
+                            isDataModified.set(true);
+                        }
                     }
                     
                     dEvt.consume();
