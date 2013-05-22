@@ -308,7 +308,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             //Set tree view to disabled
             reqTreeView.setDisable(true);
             log.debug("setDisabled true");
-            reqTreeView.setStyle("-fx-background-color: gray;");
             reqTreeView.requestLayout();
 
             //This will return immediately.
@@ -334,7 +333,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             log.debug("setDisabled false");
         }
 
-
+        
         
     }
     
@@ -454,11 +453,16 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                         //Get the selected items
                         List<ReqTreeItem> si = reqTreeView.getSelectionModel().getSelectedItems();
                         //return immediately if none are selected.
-                        if(si.size()<1){return;}
+                        if(si == null || si.size()<1){return;}
+                        
                         //Construct the text to add to the infoTextArea.
                         StringBuilder sb = new StringBuilder();
                         for(ReqTreeItem r : si){
-                            if(r.getValue() == null){
+                            //for whatever reason the selected items can include null
+                            if(r == null){
+                                sb.append("No Selection");
+                            }
+                            else if(r.getValue() == null){
                                 sb.append("Cart: ").append(r.getOrgzText());
 
                             }else{
@@ -1191,6 +1195,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             c.setOnDragDetected(new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent mEvt) {
+                    //Return immediately if the cell is empty
+                    if(c.isEmpty()){return;}
                     //Only allow dragging of Request Entries
                     if(getOrganizingType(c) != ReqTreeItem.ItemType.ENTRY){
                         return;
