@@ -536,7 +536,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     
     // Function to return a new cart number with the same requestor part of the
     // hash, but an updated date portion of the hash.
-    private Long getFreshCartNum(Long oldCartNum){
+    private static Long getFreshCartNum(Long oldCartNum){
         if(oldCartNum == null){return null;}
         
         //Calculate a new half of the cart number for the date.
@@ -546,10 +546,12 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         Long newCartNum = (oldCartNum & 0x7fffffff00000000L) | dateHash;
 
         //debug
-        log.trace("oldHash: "+String.format("%1$016x %1$d", oldCartNum));
-        log.trace("dateHash:"+String.format("%1$016x %1$d", dateHash));
-        log.trace("newHash: "+String.format("%1$016x %1$d", newCartNum));
-        
+        Logger.getLogger("manreq.ReqTreeViewController")
+                .trace(String.format("\n oldHash:  %1$016x %1$d \n " +
+                    "dateHash: %2$016x %2$d \n newHash:  %3$016x %3$d", 
+                    oldCartNum, dateHash,newCartNum) 
+                );
+
         return newCartNum;
     }
     
@@ -847,38 +849,34 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             //Add the donor Item as a child of this Item
             this.getChildren().add(donor);
             
+            //get the request that is associated with the donor tree item.
+            Request donorReq = (Request) donor.getValue();
+            
             //NEED TO REWRITE THE CART TITLE IF THIS IS THE FIRST ENTRY ADDED.
             //If this is the first item added to the Cart, Rewrite the title
             //Also need to assign fresh cart number.
             if(this.getChildren().size() == 1){
+                //Backup the request before updating it.
+                DataModel.getInstance().backupRequest( donorReq );
+                
                 //Get fresh cart number
+                donorReq.setCartnum(getFreshCartNum(donorReq.getCartnum()));
                 
                 //setValue to null should trigger a value changed call.
                 //The TreeItem should sort out its text based on it's value
                 //and children.
                 this.setValue(null);
             }
-            
-            //If the cart was not empty, modify the donor to match the exising
-            //cart number.
-            if(this.getChildren().size() > 1){
-                //this donor is not the first in the cart
+            else if(this.getChildren().size() > 1){
+                //this donor is not the first in the cart. Need to update cartnum
                 //Get the request item from the first child of this cart item
                 Request aReq = this.getChildren().get(0).getValue();
                 
                 //Backup the request before updating it.
-                DataModel.getInstance()
-                        .backupRequest( (Request) donor.getValue() );
-                
-                //Log the old and new cart values.
-                Logger.getLogger(ReqTreeViewController.class)
-                    .debug("Cart value update \nold: "
-                        + ((Request) donor.getValue()).getCartnum() 
-                        + "\nnew: " + aReq.getCartnum());
-                
+                DataModel.getInstance().backupRequest( donorReq );
+                                
                 //Set the cart number of the donor to match.
                 ( (Request) donor.getValue() ).setCartnum(aReq.getCartnum());
-                
             }
             
             //Mark the donor as data changed.
