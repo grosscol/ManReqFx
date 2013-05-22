@@ -82,13 +82,13 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     public BooleanProperty isShowing =
             new SimpleBooleanProperty(this, "isPanelShowing", false);
     
-    @FXML
-    TreeView reqTreeView;
-    
     ReqTreeItem<Request> tiPendAppr;
     ReqTreeItem<Request> tiCompleted;
     ReqTreeItem<Request> tiPendPull;
     
+    @FXML
+    TreeView reqTreeView;
+
     @FXML
     AnchorPane requestsPane;
      
@@ -263,96 +263,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         
     }    
     
-    /* Function to populate the tree view with information from Data Model.*/
-    private void popRequestTreeView(){
-        try{          
-            //Set the TreeCell Factory callback for the tree view
-            reqTreeView.setCellFactory( new ReqTreeCellFactory() );
-            //Set the Selecion mode for the tree view
-            reqTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-            //Add a listener for selection changes
-            reqTreeView.getSelectionModel().getSelectedItems().addListener(
-                    new ListChangeListener<ReqTreeItem>(){
-
-                    @Override
-                    public void onChanged(ListChangeListener.Change<? extends ReqTreeItem> change) {
-                        //Get the selected items
-                        List<ReqTreeItem> si = reqTreeView.getSelectionModel().getSelectedItems();
-                        //return immediately if none are selected.
-                        if(si.size()<1){return;}
-                        //Construct the text to add to the infoTextArea.
-                        StringBuilder sb = new StringBuilder();
-                        for(ReqTreeItem r : si){
-                            if(r.getValue() == null){
-                                sb.append("Cart: ").append(r.getOrgzText());
-
-                            }else{
-                                sb.append("Entry CartNum: ");
-                                sb.append( ((Request) r.getValue()).getCartnum() );
-                            }
-                            sb.append('\n');
-                        }
-                        //Set info text for the user
-                        infoTextOut.setText(sb.toString());
-                    }
-                        
-                    });
-            
-            //Organizing Tree Items
-            ReqTreeItem<Request> tiRoot 
-                    = new ReqTreeItem("Inventory Withdrawl Requests", 
-                        ReqTreeItem.ItemType.NOT_SPECIFIED);
-            tiPendPull 
-                    = new ReqTreeItem("Pending Pull", 
-                        ReqTreeItem.ItemType.PENDING_PULL);
-            tiPendAppr 
-                    = new ReqTreeItem("Pending Approval", 
-                        ReqTreeItem.ItemType.PENDING_APPROVAL);
-            tiCompleted 
-                    = new ReqTreeItem("Completed", 
-                        ReqTreeItem.ItemType.COMPLETED);
-           
-            //Set a listener on the pending pull and pending approval items
-            tiPendPull.addEventHandler(
-                    TreeItem.childrenModificationEvent(), new childChangeListener() 
-                    );
-            
-            tiPendAppr.addEventHandler(
-                    TreeItem.childrenModificationEvent(), new childChangeListener() 
-                    );
-            
-            /* Get the Lists of Requests from the Data Model, pass them to the 
-             * function responsible for making ReqTreeItem instances of them.
-             */
-            tiPendAppr.getChildren().addAll(
-                groupRequestsByCart( DataModel.getInstance().getPendingAppr() ));
-            log.debug("Pending approval items: " + tiPendAppr.getChildren().size() );
-            tiPendAppr.setExpanded(true);
-            
-            tiPendPull.getChildren().addAll(
-                groupRequestsByCart( DataModel.getInstance().getPendingPull() ));
-            tiPendPull.setExpanded(true);
-            log.debug("Pending pull items: " + tiPendPull.getChildren().size() );
-            
-            tiCompleted.getChildren().addAll(
-                groupRequestsByCart( DataModel.getInstance().getLastBatch()));
-            log.debug("Last batch items: " + tiCompleted.getChildren().size() );
-            
-            //Add the child items to the root item
-            tiRoot.getChildren().addAll(tiPendAppr,tiPendPull,tiCompleted);
-            tiRoot.setExpanded(true);
-            
-            //set the root item in the treeView
-            reqTreeView.setRoot(tiRoot);
-            
-            
-            
-        }catch(Exception myEx){
-            log.error(myEx);
-        }
-        
-    }
-
     @Override
     public void setInfoTextArea(TextArea ta) {
         if(ta == null){
@@ -363,99 +273,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         }
         
     }
-    
-    public void setDataModified(boolean b){
-        isDataModified.set(b);
-    }
-    
-    /* Functions and Inner classes to handle the TreeView
-     * specifically for Request entities. */
-    
-    /* Given a list of requests, return a list of MyTreeItems grouped by cart.
-     * This method comes from dfernandez from bendingthejavasppon.com 2010-04.
-     * It was originally in reference to the op4j package.
-    */
-    public static List<ReqTreeItem<Request>> groupRequestsByCart(List<Request> lr){
-        //List of All Carts
-        List<ReqTreeItem<Request>> allCarts = new ArrayList<>();
         
-        //Make mapping of Long to list of treeItems
-        Map<Long, List<ReqTreeItem<Request>>> requestsByCart = new LinkedHashMap<>();
-        
-        /* Sort the list of requests.
-         * This way the LinkedHashMap and Lists come out sorted. */
-        Collections.sort(lr, Collections.reverseOrder(new RequestComtor()));
-        
-        //For each request in the list of requests passed in:
-        for(Request r : lr){
-            //Get the list that corresponds to the request cart number
-            List requestsForCart = requestsByCart.get(r.getCartnum());
-            //If that list doesn't exist yet, create it.
-            if(requestsForCart == null){
-                requestsForCart = new ArrayList<>();
-                requestsByCart.put(r.getCartnum(), requestsForCart);
-            }
-            
-            //Add the request ReqTreeItem<Request> into the list.
-            requestsForCart.add(new ReqTreeItem<>(r));
-        }
-        
-        /*At the end of the previous loop, we should have a 
-         * map of lists of MyTreeItems, where the key to each list 
-         * is the cartnumber.  Now make the set of request tree items that will
-         * represent tha carts from the cart numbers and lists of requests.
-        */
-        for(Long cartNumber : requestsByCart.keySet() ){         
-            //Make a new cart for the cartNumber. title.toString(),
-            ReqTreeItem<Request> cart = 
-                    new ReqTreeItem(
-                        ReqTreeItem.ItemType.CART);
-            
-            //Add the matching list of elements from requestsByCart to this
-            cart.getChildren().addAll(requestsByCart.get(cartNumber));
-            
-            //Sort out the name of the cart.
-            cart.setOrgzText( ReqTreeItem.getDefaultOrgText(cart) );
-            
-            //Add this cart to the list of all carts
-            allCarts.add(cart);
-        }
-        
-        return allCarts;
-    }
-    
-    /* Check that the selected cells are all linked to Entry items and that all
-     * of those items are in the same cart.
-     */
-    private boolean checkSelectionHomogeneity(){
-        
-        List<ReqTreeItem> selected = reqTreeView.getSelectionModel().getSelectedItems();
-        
-        if(selected.size() > 0){
-            //Get parent of the first item to check against the rest
-            TreeItem parent = selected.get(0).getParent();
-            
-            //Check each item for type and parent
-            for( ReqTreeItem rtc : selected){
-                //Check that the tree cell is linked to an ENTRY.
-                if(rtc.orgzType != ReqTreeItem.ItemType.ENTRY){
-                    log.debug("Non-ENTRY ItemType in multiple selection.");
-                    return false;
-                }
-                
-                //Check that each is from the same cart as the first Item.
-                if(rtc.getParent() != parent){
-                    log.debug("Different parents in multiple selection.");
-                    return false;
-                }
-            }
-            //The selected items are all ENTRYs from the same cart.
-            return true;
-        }
-        
-        return false;
-    }
-
     @Override
     public BooleanProperty getObservableIsModified() {
         return(this.isDataModified);
@@ -614,6 +432,192 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         
     }
     
+    
+    /* Function to populate the tree view with information from Data Model.*/
+    private void popRequestTreeView(){
+        try{          
+            //Set the TreeCell Factory callback for the tree view
+            reqTreeView.setCellFactory( new ReqTreeCellFactory() );
+            //Set the Selecion mode for the tree view
+            reqTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            //Add a listener for selection changes
+            reqTreeView.getSelectionModel().getSelectedItems().addListener(
+                    new ListChangeListener<ReqTreeItem>(){
+
+                    @Override
+                    public void onChanged(ListChangeListener.Change<? extends ReqTreeItem> change) {
+                        //Get the selected items
+                        List<ReqTreeItem> si = reqTreeView.getSelectionModel().getSelectedItems();
+                        //return immediately if none are selected.
+                        if(si.size()<1){return;}
+                        //Construct the text to add to the infoTextArea.
+                        StringBuilder sb = new StringBuilder();
+                        for(ReqTreeItem r : si){
+                            if(r.getValue() == null){
+                                sb.append("Cart: ").append(r.getOrgzText());
+
+                            }else{
+                                sb.append("Entry CartNum: ");
+                                sb.append( ((Request) r.getValue()).getCartnum() );
+                            }
+                            sb.append('\n');
+                        }
+                        //Set info text for the user
+                        infoTextOut.setText(sb.toString());
+                    }
+                        
+                    });
+            
+            //Organizing Tree Items
+            ReqTreeItem<Request> tiRoot 
+                    = new ReqTreeItem("Inventory Withdrawl Requests", 
+                        ReqTreeItem.ItemType.NOT_SPECIFIED);
+            tiPendPull 
+                    = new ReqTreeItem("Pending Pull", 
+                        ReqTreeItem.ItemType.PENDING_PULL);
+            tiPendAppr 
+                    = new ReqTreeItem("Pending Approval", 
+                        ReqTreeItem.ItemType.PENDING_APPROVAL);
+            tiCompleted 
+                    = new ReqTreeItem("Completed", 
+                        ReqTreeItem.ItemType.COMPLETED);
+           
+            //Set a listener on the pending pull and pending approval items
+            tiPendPull.addEventHandler(
+                    TreeItem.childrenModificationEvent(), new childChangeListener() 
+                    );
+            
+            tiPendAppr.addEventHandler(
+                    TreeItem.childrenModificationEvent(), new childChangeListener() 
+                    );
+            
+            /* Get the Lists of Requests from the Data Model, pass them to the 
+             * function responsible for making ReqTreeItem instances of them.
+             */
+            tiPendAppr.getChildren().addAll(
+                groupRequestsByCart( DataModel.getInstance().getPendingAppr() ));
+            log.debug("Pending approval items: " + tiPendAppr.getChildren().size() );
+            tiPendAppr.setExpanded(true);
+            
+            tiPendPull.getChildren().addAll(
+                groupRequestsByCart( DataModel.getInstance().getPendingPull() ));
+            tiPendPull.setExpanded(true);
+            log.debug("Pending pull items: " + tiPendPull.getChildren().size() );
+            
+            tiCompleted.getChildren().addAll(
+                groupRequestsByCart( DataModel.getInstance().getLastBatch()));
+            log.debug("Last batch items: " + tiCompleted.getChildren().size() );
+            
+            //Add the child items to the root item
+            tiRoot.getChildren().addAll(tiPendAppr,tiPendPull,tiCompleted);
+            tiRoot.setExpanded(true);
+            
+            //set the root item in the treeView
+            reqTreeView.setRoot(tiRoot);
+            
+            
+            
+        }catch(Exception myEx){
+            log.error(myEx);
+        }
+        
+    }
+
+    // Set the property that is listened to by the parent control to indicate
+    // that the data set has been changed.  Could move this to the data model.
+    public void setDataModified(boolean b){
+        isDataModified.set(b);
+    }
+    
+    /* Functions and Inner classes to handle the TreeView
+     * specifically for Request entities. */
+    
+    /* Given a list of requests, return a list of MyTreeItems grouped by cart.
+     * This method comes from dfernandez from bendingthejavasppon.com 2010-04.
+     * It was originally in reference to the op4j package.
+    */
+    public static List<ReqTreeItem<Request>> groupRequestsByCart(List<Request> lr){
+        //List of All Carts
+        List<ReqTreeItem<Request>> allCarts = new ArrayList<>();
+        
+        //Make mapping of Long to list of treeItems
+        Map<Long, List<ReqTreeItem<Request>>> requestsByCart = new LinkedHashMap<>();
+        
+        /* Sort the list of requests.
+         * This way the LinkedHashMap and Lists come out sorted. */
+        Collections.sort(lr, Collections.reverseOrder(new RequestComtor()));
+        
+        //For each request in the list of requests passed in:
+        for(Request r : lr){
+            //Get the list that corresponds to the request cart number
+            List requestsForCart = requestsByCart.get(r.getCartnum());
+            //If that list doesn't exist yet, create it.
+            if(requestsForCart == null){
+                requestsForCart = new ArrayList<>();
+                requestsByCart.put(r.getCartnum(), requestsForCart);
+            }
+            
+            //Add the request ReqTreeItem<Request> into the list.
+            requestsForCart.add(new ReqTreeItem<>(r));
+        }
+        
+        /*At the end of the previous loop, we should have a 
+         * map of lists of MyTreeItems, where the key to each list 
+         * is the cartnumber.  Now make the set of request tree items that will
+         * represent tha carts from the cart numbers and lists of requests.
+        */
+        for(Long cartNumber : requestsByCart.keySet() ){         
+            //Make a new cart for the cartNumber. title.toString(),
+            ReqTreeItem<Request> cart = 
+                    new ReqTreeItem(
+                        ReqTreeItem.ItemType.CART);
+            
+            //Add the matching list of elements from requestsByCart to this
+            cart.getChildren().addAll(requestsByCart.get(cartNumber));
+            
+            //Sort out the name of the cart.
+            cart.setOrgzText( ReqTreeItem.getDefaultOrgText(cart) );
+            
+            //Add this cart to the list of all carts
+            allCarts.add(cart);
+        }
+        
+        return allCarts;
+    }
+    
+    /* Check that the selected cells are all linked to Entry items and that all
+     * of those items are in the same cart.
+     */
+    private boolean checkSelectionHomogeneity(){
+        
+        List<ReqTreeItem> selected = reqTreeView.getSelectionModel().getSelectedItems();
+        
+        if(selected.size() > 0){
+            //Get parent of the first item to check against the rest
+            TreeItem parent = selected.get(0).getParent();
+            
+            //Check each item for type and parent
+            for( ReqTreeItem rtc : selected){
+                //Check that the tree cell is linked to an ENTRY.
+                if(rtc.orgzType != ReqTreeItem.ItemType.ENTRY){
+                    log.debug("Non-ENTRY ItemType in multiple selection.");
+                    return false;
+                }
+                
+                //Check that each is from the same cart as the first Item.
+                if(rtc.getParent() != parent){
+                    log.debug("Different parents in multiple selection.");
+                    return false;
+                }
+            }
+            //The selected items are all ENTRYs from the same cart.
+            return true;
+        }
+        
+        return false;
+    }
+
+
     //Search children of start.
     //Designed to be used on the Completed, Pending Appr, or Pending Pull nodes.
     //Will return the PARENT of the first item with a matching cart num
@@ -703,8 +707,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
      * a category string for the display.
      */
     public static class ReqTreeItem<T> extends TreeItem<Request>{
-
-
 
         public static enum ItemType {
             ENTRY, CART, PENDING_PULL, 
@@ -823,7 +825,10 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             
             //NEED TO REWRITE THE CART TITLE IF THIS IS THE FIRST ENTRY ADDED.
             //If this is the first item added to the Cart, Rewrite the title
+            //Also need to assign fresh cart number.
             if(this.getChildren().size() == 1){
+                //Get fresh cart number
+                
                 //setValue to null should trigger a value changed call.
                 //The TreeItem should sort out its text based on it's value
                 //and children.
@@ -850,9 +855,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                 //Set the cart number of the donor to match.
                 ( (Request) donor.getValue() ).setCartnum(aReq.getCartnum());
                 
-                //Submit the Request entity to the list of modifications
-                //DataModel.getInstance()
-                //        .submitAlteredRequest( (Request) donor.getValue() );
             }
             
             //Mark the donor as data changed.
@@ -970,6 +972,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         
     }
     
+    //Get the sum of the vial numbers of the children of the item.
     private Integer sumVialsRequestedOfChildren(ReqTreeItem rti){
         if(rti == null){ return null; } //nothing from nothing
         
