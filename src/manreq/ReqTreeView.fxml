@@ -7,7 +7,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane id="AnchorPane" fx:id="requestsPane" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml" fx:controller="manreq.ReqTreeViewController">
+<AnchorPane id="AnchorPane" fx:id="requestsPane" prefHeight="347.0" prefWidth="346.2135948" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml" fx:controller="manreq.ReqTreeViewController">
   <children>
     <TreeView fx:id="reqTreeView" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <stylesheets>
@@ -45,6 +45,11 @@
         </ContextMenu>
       </contextMenu>
     </Label>
+    <Pane id="overlayPane" fx:id="busyOverlay" blendMode="MULTIPLY" depthTest="ENABLE" prefHeight="347.0" prefWidth="346.213623046875" styleClass="overlayPanel" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <stylesheets>
+        <URL value="@resources/reqtreeview.css" />
+      </stylesheets>
+    </Pane>
   </children>
   <stylesheets>
     <URL value="@resources/reqtreeview.css" />

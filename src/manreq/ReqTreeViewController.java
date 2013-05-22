@@ -43,6 +43,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -91,6 +92,9 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
 
     @FXML
     AnchorPane requestsPane;
+    
+    @FXML
+    Pane busyOverlay;
      
     //Context Menu for the TreeCells representing Carts
     @FXML
@@ -265,7 +269,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         requestsPane.sceneProperty().addListener(new SceneMembershipListener() );
         
         //Add a listener to the Requests arm of the DataModel
-        
+        DataModel.getInstance().getIsRequestsBusy().addListener(new DataModelBusyListener());
     }    
     
     @Override
@@ -303,7 +307,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         
         //get answer from the confirmController
         if(cpc.getWasConfirmed() == Boolean.TRUE){
-                //Set the data isDataModified to false
+
             
             //Set tree view to disabled
             reqTreeView.setDisable(true);
@@ -313,8 +317,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             //This will return immediately.
             DataModel.getInstance().commitRequestChanges();
             
-            
             //TODO: Move all post transaction work to listeners
+            
             
             //if(commitWored){ alter the UI
             //if(commitFailed) notify user, alter the UI call cancel operation
@@ -1420,6 +1424,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         }
     }
     
+    
+    
     private class DataModelBusyListener implements ChangeListener<Boolean>{
 
         @Override
@@ -1427,19 +1433,29 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             Boolean oldVal, Boolean newVal) {
             if(oldVal == Boolean.FALSE && newVal == Boolean.TRUE){
                 //The DataWorker is now busy.
-                //TODO: Add Gray Overlay
+                log.debug("DataModel Requests is busy.");
+                //Overlay with grey and block mouse events.
+                busyOverlay.setVisible(true);
+                busyOverlay.setMouseTransparent(false);
+                
             }else if(oldVal == Boolean.TRUE && newVal == Boolean.FALSE){
+                log.debug("DataModel Requests is no longer busy.");
                 //The Data Model Worker has returned.
                 if(DataModel.getInstance().didRequestModSucceed()){
+                    log.debug("The last modification request succeeded.");
                     //Everything worked
-                    //UI should be up
+                    //UI should be updated
+                    
+                    
                 }else{
+                    log.debug("The last modification request failed.");
                     //Transaction failed
-                }
-               
+                    //UI should be updated
+                }       
+                //Remove overlay and permit mouse events through
+                busyOverlay.setVisible(false);
+                busyOverlay.setMouseTransparent(true);
              }
-            //To change body of generated methods, choose Tools | Templates.
-            throw new UnsupportedOperationException("Not supported yet.");
         }
         
     }
