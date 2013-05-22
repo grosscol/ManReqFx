@@ -148,6 +148,9 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             
         //Get the old cart number hash
         Long oldCartNum = ((Request) selItem.getValue()).getCartnum();
+        Long newCartNum = getFreshCartNum(oldCartNum);
+         
+        /*
         //Calculate a new half of the cart number for the date.
         //leading 32 bits are 0xffffffff mask to get 0x00000000
         Long dateHash = new Long (new Date().hashCode()) & 0x00000000ffffffffL; 
@@ -161,6 +164,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         log.debug("dateHash:"+String.format("%1$016x %1$d", dateHash));
         log.debug("newHash: "+String.format("%1$016x %1$d", newCartNum));
 
+        */
+        
         //Create new cart item with the same text as the original cart parentCart.orgzText
         ReqTreeItem dupCart = 
                 new ReqTreeItem(parentCart.orgzText, ReqTreeItem.ItemType.CART);
@@ -527,6 +532,25 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     // that the data set has been changed.  Could move this to the data model.
     public void setDataModified(boolean b){
         isDataModified.set(b);
+    }
+    
+    // Function to return a new cart number with the same requestor part of the
+    // hash, but an updated date portion of the hash.
+    private Long getFreshCartNum(Long oldCartNum){
+        if(oldCartNum == null){return null;}
+        
+        //Calculate a new half of the cart number for the date.
+        //leading 32 bits are 0xffffffff mask to get 0x00000000
+        Long dateHash = new Long (new Date().hashCode()) & 0x00000000ffffffffL; 
+        //Mask off half the old cart number. Replace it with new date hash code.
+        Long newCartNum = (oldCartNum & 0x7fffffff00000000L) | dateHash;
+
+        //debug
+        log.trace("oldHash: "+String.format("%1$016x %1$d", oldCartNum));
+        log.trace("dateHash:"+String.format("%1$016x %1$d", dateHash));
+        log.trace("newHash: "+String.format("%1$016x %1$d", newCartNum));
+        
+        return newCartNum;
     }
     
     /* Functions and Inner classes to handle the TreeView
