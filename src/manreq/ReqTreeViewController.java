@@ -44,6 +44,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -95,6 +96,9 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     
     @FXML
     Pane busyOverlay;
+    
+    @FXML
+    VBox refreshOptionsBox;
      
     //Context Menu for the TreeCells representing Carts
     @FXML
@@ -220,6 +224,10 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     
     @FXML
     public void refreshPending(ActionEvent aEvt){
+        
+        //Hide the refresh options Box.
+        refreshOptionsBox.setVisible(true);
+                    
         StringBuilder sb = new StringBuilder("Refreshing pending requests from database.");
         infoTextOut.setText(sb.toString());
         
@@ -1477,6 +1485,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                     log.debug("The last database operation failed.");
                     //Transaction failed
                     //UI is not in sync with the database.
+                    //Show the refresh options Box.
+                    refreshOptionsBox.setVisible(true);
                 }     
                 
                 //Remove overlay and permit mouse events through

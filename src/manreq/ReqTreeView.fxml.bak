@@ -45,7 +45,7 @@
         </ContextMenu>
       </contextMenu>
     </Label>
-    <Pane blendMode="MULTIPLY" depthTest="ENABLE" prefHeight="347.0" prefWidth="346.213623046875" styleClass="overlayPanel" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <Pane id="overlayPane" fx:id="busyOverlay" blendMode="MULTIPLY" depthTest="ENABLE" prefHeight="347.0" prefWidth="346.213623046875" styleClass="overlayPanel" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <stylesheets>
         <URL value="@resources/reqtreeview.css" />
       </stylesheets>
