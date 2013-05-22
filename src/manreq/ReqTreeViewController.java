@@ -303,42 +303,14 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             confirmStage.initOwner(requestsPane.getScene().getWindow());
         }
 
+        //Show confirmation dialog and wait for it to close.
         confirmStage.showAndWait();
         
         //get answer from the confirmController
         if(cpc.getWasConfirmed() == Boolean.TRUE){
-
-            
-            //Set tree view to disabled
-            reqTreeView.setDisable(true);
-            log.debug("setDisabled true");
-            reqTreeView.requestLayout();
-
             //This will return immediately.
             DataModel.getInstance().commitRequestChanges();
-            
-            //TODO: Move all post transaction work to listeners
-            
-            
-            //if(commitWored){ alter the UI
-            //if(commitFailed) notify user, alter the UI call cancel operation
-            this.isDataModified.set(false);
-         
-            //reset all the nodes to not modified flag.
-            resetAllChildItemsIsModified(
-                (ReqTreeItem) reqTreeView.getRoot()
-                );
-            //force rerender. Kluge.
-            reqTreeView.getRoot().setExpanded(false);
-            reqTreeView.getRoot().setExpanded(true);
-            
-            //set tree view to enabled
-            reqTreeView.setDisable(false);
-            log.debug("setDisabled false");
         }
-
-        
-        
     }
     
     //Function to put all the UI elements back in place.
@@ -1425,7 +1397,9 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     }
     
     
-    
+    /* Listener to track the state of the boolean property of the data model
+     * that is true when the data model is executing a request query/modification
+     */
     private class DataModelBusyListener implements ChangeListener<Boolean>{
 
         @Override
@@ -1442,19 +1416,29 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                 log.debug("DataModel Requests is no longer busy.");
                 //The Data Model Worker has returned.
                 if(DataModel.getInstance().didRequestModSucceed()){
-                    log.debug("The last modification request succeeded.");
+                    log.debug("The last database operation succeeded.");
                     //Everything worked
-                    //UI should be updated
-                    
-                    
+                    //UI should be up to date.
                 }else{
-                    log.debug("The last modification request failed.");
+                    log.debug("The last database operation failed.");
                     //Transaction failed
-                    //UI should be updated
-                }       
+                    //UI is not in sync with the database.
+                }     
+                
                 //Remove overlay and permit mouse events through
                 busyOverlay.setVisible(false);
                 busyOverlay.setMouseTransparent(true);
+                
+                setDataModified(false);
+         
+                //reset all the nodes to not modified flag.
+                resetAllChildItemsIsModified(
+                    (ReqTreeItem) reqTreeView.getRoot()
+                    );
+
+                //force rerender of tree view. Kluge.
+                reqTreeView.getRoot().setExpanded(false);
+                reqTreeView.getRoot().setExpanded(true);
              }
         }
         
