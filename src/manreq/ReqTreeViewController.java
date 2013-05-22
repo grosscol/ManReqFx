@@ -218,6 +218,58 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         log.debug("Category: summary. action handler");
     }
     
+    @FXML
+    public void refreshPending(ActionEvent aEvt){
+        StringBuilder sb = new StringBuilder("Refreshing pending requests from database.");
+        infoTextOut.setText(sb.toString());
+        
+        //First do a simple validation query. This will block the UI.
+        if(DataModel.getInstance().simpleValidationQuery() == false){
+            //In the event of failure, something is seriously f'ed with the db.
+            sb.append("\nSimple Validation Query failed.")
+                    .append("\nSomething is very wrong with the database.");
+            infoTextOut.setText(sb.toString());
+        }else{
+            sb.append("\nSimple validation query succeeded.")
+                    .append("\nDatabase connection is okay.")
+                    .append("\nDoing pending approval query...");
+            infoTextOut.setText(sb.toString());
+            
+            //Update pending approval.
+            //Tell DataModel to refresh it's data backing. This will block the UI.
+            if(DataModel.getInstance().queryPendingApproval() == true){
+                sb.append("\nPending approval query succeeded.");
+                infoTextOut.setText(sb.toString());
+                
+                //Query succeeded
+                tiPendAppr.getChildren().clear();
+                tiPendAppr.getChildren().addAll(
+                    groupRequestsByCart( DataModel.getInstance().getPendingAppr() ));
+            }else{
+                //Query failed.
+                sb.append("\nPending approval query failed.");
+                infoTextOut.setText(sb.toString());
+            }
+            
+            //Update pending pull
+            //Tell DataModel to refresh it's data backing. This will block the UI.
+            if(DataModel.getInstance().queryPendingPull() == true){
+                sb.append("\nPending pull query succeeded.");
+                infoTextOut.setText(sb.toString());
+                
+                //Query succeeded
+                tiPendPull.getChildren().clear();
+                tiPendPull.getChildren().addAll(
+                    groupRequestsByCart( DataModel.getInstance().getPendingPull() ));
+            }else{
+                //Query failed.
+                sb.append("\nPending pull query failed.");
+                infoTextOut.setText(sb.toString());
+            }
+
+        }
+    }
+    
     
     /**
      * Initializes the controller class.
@@ -510,9 +562,11 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
 
     // Set the property that is listened to by the parent control to indicate
     // that the data set has been changed.  Could move this to the data model.
-    public void setDataModified(boolean b){
+    private void setDataModified(boolean b){
         isDataModified.set(b);
     }
+    
+
     
     // Function to return a new cart number with the same requestor part of the
     // hash, but an updated date portion of the hash.
