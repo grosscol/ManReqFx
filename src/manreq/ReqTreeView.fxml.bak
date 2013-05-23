@@ -3,6 +3,7 @@
 <?import java.lang.*?>
 <?import java.net.*?>
 <?import java.util.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -50,6 +51,17 @@
         <URL value="@resources/reqtreeview.css" />
       </stylesheets>
     </Pane>
+    <VBox fx:id="refreshOptionsBox" alignment="TOP_CENTER" prefHeight="150.0" prefWidth="151.00359480000003" AnchorPane.bottomAnchor="98.5" AnchorPane.leftAnchor="99.0" AnchorPane.rightAnchor="96.21" AnchorPane.topAnchor="98.5">
+      <children>
+        <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="31.0" prefWidth="151.00360107421875" text="Refresh from Database:">
+          <VBox.margin>
+            <Insets bottom="2.0" fx:id="x1" />
+          </VBox.margin>
+        </Label>
+        <Button mnemonicParsing="false" onAction="#refreshPending" prefHeight="51.0" prefWidth="126.0" text="Pending Requests" VBox.margin="$x1" />
+        <Button mnemonicParsing="false" prefHeight="51.0" prefWidth="126.0" text="All Requests" />
+      </children>
+    </VBox>
   </children>
   <stylesheets>
     <URL value="@resources/reqtreeview.css" />

@@ -257,6 +257,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                 //Query failed.
                 sb.append("\nPending approval query failed.");
                 infoTextOut.setText(sb.toString());
+                
+                tiPendAppr.getChildren().clear();
             }
             
             //Update pending pull
@@ -273,7 +275,22 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                 //Query failed.
                 sb.append("\nPending pull query failed.");
                 infoTextOut.setText(sb.toString());
+                
+                tiPendPull.getChildren().clear();
             }
+            
+            
+            //Remove overlay and permit mouse events through
+            busyOverlay.setVisible(false);
+            busyOverlay.setMouseTransparent(true);
+
+            setDataModified(false);
+
+            //reset all the nodes to not modified flag.
+            resetAllChildItemsIsModified(
+                (ReqTreeItem) reqTreeView.getRoot()
+                );
+            
 
         }
     }
@@ -1479,8 +1496,25 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                 //The Data Model Worker has returned.
                 if(DataModel.getInstance().didRequestModSucceed()){
                     log.debug("The last database operation succeeded.");
-                    //Everything worked
+                    //Everything worked. Clear out any empty carts.
+                    removeLeafNonValueItems((ReqTreeItem) reqTreeView.getRoot());
+                    
                     //UI should be up to date.
+                    //Remove overlay and permit mouse events through
+                    busyOverlay.setVisible(false);
+                    busyOverlay.setMouseTransparent(true);
+
+                    setDataModified(false);
+
+                    //reset all the nodes to not modified flag.
+                    resetAllChildItemsIsModified(
+                        (ReqTreeItem) reqTreeView.getRoot()
+                        );
+                    
+                    //force rerender of tree view. Kluge.
+                    reqTreeView.getRoot().setExpanded(false);
+                    reqTreeView.getRoot().setExpanded(true);
+                    
                 }else{
                     log.debug("The last database operation failed.");
                     //Transaction failed
@@ -1488,21 +1522,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                     //Show the refresh options Box.
                     refreshOptionsBox.setVisible(true);
                 }     
-                
-                //Remove overlay and permit mouse events through
-                busyOverlay.setVisible(false);
-                busyOverlay.setMouseTransparent(true);
-                
-                setDataModified(false);
-         
-                //reset all the nodes to not modified flag.
-                resetAllChildItemsIsModified(
-                    (ReqTreeItem) reqTreeView.getRoot()
-                    );
-
-                //force rerender of tree view. Kluge.
-                reqTreeView.getRoot().setExpanded(false);
-                reqTreeView.getRoot().setExpanded(true);
              }
         }
         
