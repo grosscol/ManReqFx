@@ -223,61 +223,28 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     }
     
     @FXML
-    public void refreshPending(ActionEvent aEvt){
-        
+    public void refreshPending(ActionEvent aEvt){     
         //Hide the refresh options Box.
-        refreshOptionsBox.setVisible(true);
-                    
-        StringBuilder sb = new StringBuilder("Refreshing pending requests from database.");
-        infoTextOut.setText(sb.toString());
+        refreshOptionsBox.setVisible(false);
+
+        infoTextOut.setText("Refreshing pending requests from database.");
         
         //First do a simple validation query. This will block the UI.
         if(DataModel.getInstance().simpleValidationQuery() == false){
             //In the event of failure, something is seriously f'ed with the db.
-            sb.append("\nSimple Validation Query failed.")
-                    .append("\nSomething is very wrong with the database.");
-            infoTextOut.setText(sb.toString());
+            infoTextOut.appendText("\nSimple Validation Query failed."
+                    + "\nSomething is very wrong with the database/connection.");
         }else{
-            sb.append("\nSimple validation query succeeded.")
-                    .append("\nDatabase connection is okay.")
-                    .append("\nDoing pending approval query...");
-            infoTextOut.setText(sb.toString());
+
+            infoTextOut.appendText("\nSimple validation query succeeded."
+                    + "\nDatabase connection is okay."
+                    + "\nDoing pending approval query...");
             
-            //Update pending approval.
-            //Tell DataModel to refresh it's data backing. This will block the UI.
-            if(DataModel.getInstance().queryPendingApproval() == true){
-                sb.append("\nPending approval query succeeded.");
-                infoTextOut.setText(sb.toString());
-                
-                //Query succeeded
-                tiPendAppr.getChildren().clear();
-                tiPendAppr.getChildren().addAll(
-                    groupRequestsByCart( DataModel.getInstance().getPendingAppr() ));
-            }else{
-                //Query failed.
-                sb.append("\nPending approval query failed.");
-                infoTextOut.setText(sb.toString());
-                
-                tiPendAppr.getChildren().clear();
-            }
+            //refresh Pending Approval data and Tree Items
+            refreshPendAppr();
             
-            //Update pending pull
-            //Tell DataModel to refresh it's data backing. This will block the UI.
-            if(DataModel.getInstance().queryPendingPull() == true){
-                sb.append("\nPending pull query succeeded.");
-                infoTextOut.setText(sb.toString());
-                
-                //Query succeeded
-                tiPendPull.getChildren().clear();
-                tiPendPull.getChildren().addAll(
-                    groupRequestsByCart( DataModel.getInstance().getPendingPull() ));
-            }else{
-                //Query failed.
-                sb.append("\nPending pull query failed.");
-                infoTextOut.setText(sb.toString());
-                
-                tiPendPull.getChildren().clear();
-            }
+            //refresh Pending Pull data and Tree Items
+            refreshPendPull();
             
             
             //Remove overlay and permit mouse events through
@@ -286,20 +253,54 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
 
             setDataModified(false);
 
-            //reset all the nodes to not modified flag.
+            //reset all the Tree Items is modified display flag to false.
             resetAllChildItemsIsModified(
                 (ReqTreeItem) reqTreeView.getRoot()
                 );
-            
-
         }
     }
     
     @FXML
     public void refreshAll(ActionEvent aEvt){
-        //CALL refreshPending
+        //Hide the refresh options Box.
+        refreshOptionsBox.setVisible(false);
+
+        infoTextOut.setText("Refreshing requests from database.");
         
-        //Do refresh for completed requests.
+        //First do a simple validation query. This will block the UI.
+        if(DataModel.getInstance().simpleValidationQuery() == false){
+            //In the event of failure, something is seriously f'ed with the db.
+            infoTextOut.appendText("\nSimple Validation Query failed."
+                    + "\nSomething is very wrong with the database/connection.");
+        }else{
+
+            infoTextOut.appendText("\nSimple validation query succeeded."
+                    + "\nDatabase connection is okay."
+                    + "\nDoing pending approval query...");
+            
+            //refresh Pending Approval data and Tree Items
+            refreshPendAppr();
+            
+            infoTextOut.appendText("\nDoing pending pull query...");
+            
+            //refresh Pending Pull data and Tree Items
+            refreshPendPull();
+            
+            infoTextOut.appendText("\nDoing completed requets query...");
+            //refresh Completed Requests data and Tree Items
+            refreshCompleted();
+            
+            //Remove overlay and permit mouse events through
+            busyOverlay.setVisible(false);
+            busyOverlay.setMouseTransparent(true);
+
+            setDataModified(false);
+
+            //reset all the Tree Items is modified display flag to false.
+            resetAllChildItemsIsModified(
+                (ReqTreeItem) reqTreeView.getRoot()
+                );
+        }
     }
     
     /**
@@ -495,6 +496,61 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         
     }
     
+////////////////////////// UTILITY FUNCTIONS ///////////////////////////////////
+    //Call DataModel to re-obtain backing data. Retrieve backing data, and 
+    //re-display.  This will block the user interface thread until it's done.
+    private void refreshPendAppr(){
+        //Update pending approval in data model.
+        if(DataModel.getInstance().queryPendingApproval() == true){
+            infoTextOut.appendText("\nPending approval query succeeded.");
+
+            //Query succeeded. Update the UI.
+            tiPendAppr.getChildren().clear();
+            tiPendAppr.getChildren().addAll(
+                groupRequestsByCart( DataModel.getInstance().getPendingAppr() ));
+        }else{
+            //Query failed. Update the UI.
+            infoTextOut.appendText("\nPending approval query failed.");
+            tiPendAppr.getChildren().clear();
+        }
+    }
+    
+    //Call DataModel to re-obtain backing data. Retrieve backing data, and 
+    //re-display.  This will block the user interface thread until it's done.
+    private void refreshPendPull(){
+        //Update pending pull in data model.
+        if(DataModel.getInstance().queryPendingPull() == true){
+            infoTextOut.appendText("\nPending pull query succeeded.");
+
+            //Query succeeded. Update the UI
+            tiPendPull.getChildren().clear();
+            tiPendPull.getChildren().addAll(
+                groupRequestsByCart( DataModel.getInstance().getPendingPull() ));
+        }else{
+            //Query failed. Update the UI
+            infoTextOut.appendText("\nPending pull query failed.");
+            tiPendPull.getChildren().clear();
+        }
+    }
+    
+    //Call DataModel to re-obtain backing data. Retrieve backing data, and 
+    //re-display.  This will block the user interface thread until it's done.
+    private void refreshCompleted(){
+        //Update completed requests in data model.
+        
+        if(DataModel.getInstance().queryLastCompletedAfter(new Date()) == true){
+            infoTextOut.appendText("\nCompleted requests query succeeded.");
+
+            //Query succeeded. Update the UI
+            tiCompleted.getChildren().clear();
+            tiCompleted.getChildren().addAll(
+                groupRequestsByCart( DataModel.getInstance().getPendingPull() ));
+        }else{
+            //Query failed. Update the UI
+            infoTextOut.appendText("\nCompleted requests query failed.");
+            tiCompleted.getChildren().clear();
+        }
+    }
     
     /* Function to populate the tree view with information from Data Model.*/
     private void popRequestTreeView(){
@@ -597,8 +653,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         isDataModified.set(b);
     }
     
-
-    
     // Function to return a new cart number with the same requestor part of the
     // hash, but an updated date portion of the hash.
     private static Long getFreshCartNum(Long oldCartNum){
@@ -620,6 +674,70 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         return newCartNum;
     }
     
+        //Comparator for use in ordering the requests before groupbing by cart.
+    private static class RequestComtor implements Comparator<Request>{
+
+        @Override
+        public int compare(Request o1, Request o2) {
+            //EQUALITY COMPARISON
+            if( o1.getReqIndex() == o2.getReqIndex() ){return 0;}
+
+            //0.DATE SUBMITTED
+            if( o1.getDatesub().compareTo(o2.getDatesub()) != 0 ){
+                return o1.getDatesub().compareTo(o2.getDatesub());
+            }
+
+            //1.CART NUMBER COMPARISON
+            if( o1.getCartnum() < o2.getCartnum()){
+                return -1;
+            }else if(o1.getCartnum() > o2.getCartnum()){
+                return 1;
+            }
+
+            
+
+            //2.LOCATION COMPARISON
+            int locCompare;
+            //make sure locations are not null
+            if (o1.getInvRecord().getLocation() != null && 
+                    o2.getInvRecord().getLocation() != null) {
+                //Attached Norminv and Patient exist Check Location.
+                locCompare = o1.getInvRecord().getLocation().compareTo(
+                            o2.getInvRecord().getLocation() );
+
+                if(locCompare < 0){ return -1;}   //o1 Location is less.
+                else if(locCompare > 0){return 1;} //o1 Location is greater
+            }
+
+            //3.NAME COMPARISON
+            int nameComp;
+            if(o1.getInvRecord().getOwner() != null &&
+                        o2.getInvRecord().getOwner() != null){
+                //Attached Patients are not null.  Compare Names
+                nameComp = o1.getInvRecord().getOwner().getLname().compareTo(
+                        o2.getInvRecord().getOwner().getLname());
+
+                if(nameComp < 0){return -1;}      //o1 Lname is less
+                else if(nameComp > 0){return 1;}    //o1 Lname is greater
+                else{
+                    //Last names are the same.  onto Fname.
+                    nameComp = o1.getInvRecord().getOwner().getFname().compareTo(
+                        o2.getInvRecord().getOwner().getFname());
+
+                    if(nameComp < 0){return -1;}  //o1 Fname is less
+                    else if(nameComp > 0 ){return 1;}//o1 Fname is greater
+                }
+            }
+
+            //Finally compare req indexes
+            return ( ( o1.getReqIndex() < o2.getReqIndex() ) ?  -1 :  1  );
+        }
+
+    }
+   
+ 
+    
+////////////////////////// TREE VIEW FUNCTIONS /////////////////////////////////    
     /* Functions and Inner classes to handle the TreeView
      * specifically for Request entities. */
     
@@ -1238,7 +1356,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     //Cell factory callback function for use by the TreeView to create the 
     // nodes (cells) that will each display one TreeItem.
     public class ReqTreeCellFactory 
-    implements Callback<TreeView<Request>, TreeCell<Request> > {
+        implements Callback<TreeView<Request>, TreeCell<Request> > {
         
         //Custom DataFormat for Request object in the drag board
         private DataFormat dFmt = new DataFormat("tilpersist/Request");
@@ -1394,67 +1512,9 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         } 
     }
     
-    //Comparator for use in ordering the requests before groupbing by cart.
-    private static class RequestComtor implements Comparator<Request>{
-
-        @Override
-        public int compare(Request o1, Request o2) {
-            //EQUALITY COMPARISON
-            if( o1.getReqIndex() == o2.getReqIndex() ){return 0;}
-
-            //0.DATE SUBMITTED
-            if( o1.getDatesub().compareTo(o2.getDatesub()) != 0 ){
-                return o1.getDatesub().compareTo(o2.getDatesub());
-            }
-
-            //1.CART NUMBER COMPARISON
-            if( o1.getCartnum() < o2.getCartnum()){
-                return -1;
-            }else if(o1.getCartnum() > o2.getCartnum()){
-                return 1;
-            }
-
-            
-
-            //2.LOCATION COMPARISON
-            int locCompare;
-            //make sure locations are not null
-            if (o1.getInvRecord().getLocation() != null && 
-                    o2.getInvRecord().getLocation() != null) {
-                //Attached Norminv and Patient exist Check Location.
-                locCompare = o1.getInvRecord().getLocation().compareTo(
-                            o2.getInvRecord().getLocation() );
-
-                if(locCompare < 0){ return -1;}   //o1 Location is less.
-                else if(locCompare > 0){return 1;} //o1 Location is greater
-            }
-
-            //3.NAME COMPARISON
-            int nameComp;
-            if(o1.getInvRecord().getOwner() != null &&
-                        o2.getInvRecord().getOwner() != null){
-                //Attached Patients are not null.  Compare Names
-                nameComp = o1.getInvRecord().getOwner().getLname().compareTo(
-                        o2.getInvRecord().getOwner().getLname());
-
-                if(nameComp < 0){return -1;}      //o1 Lname is less
-                else if(nameComp > 0){return 1;}    //o1 Lname is greater
-                else{
-                    //Last names are the same.  onto Fname.
-                    nameComp = o1.getInvRecord().getOwner().getFname().compareTo(
-                        o2.getInvRecord().getOwner().getFname());
-
-                    if(nameComp < 0){return -1;}  //o1 Fname is less
-                    else if(nameComp > 0 ){return 1;}//o1 Fname is greater
-                }
-            }
-
-            //Finally compare req indexes
-            return ( ( o1.getReqIndex() < o2.getReqIndex() ) ?  -1 :  1  );
-        }
-
-    }
    
+//////////////////////////////////////////////////////////////////////////////// 
+    
     
     /* Listener to track if the panel is currently showing, and record that 
      * state in a place that the main controller can observe.  The main panel 

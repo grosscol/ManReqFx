@@ -8,16 +8,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
@@ -25,7 +19,6 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.LockModeType;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
@@ -410,6 +403,7 @@ public class DataModel {
             }
         }
     
+    //Function to start a worker thread to commit changes.
     public void commitRequestChanges(){
         //Don't run if isBusyRequests is already true
         if(isBusyRequests.get()){ return; }
@@ -430,7 +424,7 @@ public class DataModel {
         
         //Setup listeners to handle the result of the task.
         rmw.setOnSucceeded( new ReqReturnHandler() );
-        rmw.setOnFailed(new ReqReturnHandler() );
+        rmw.setOnFailed( new ReqReturnHandler() );
 
         
         //Create a thread for the worker
@@ -441,7 +435,6 @@ public class DataModel {
         thr.start();
 
     }
-    
     
     ////////////////////////////////////////////////////////////////////////////
     
