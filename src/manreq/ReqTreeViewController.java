@@ -295,6 +295,12 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         }
     }
     
+    @FXML
+    public void refreshAll(ActionEvent aEvt){
+        //CALL refreshPending
+        
+        //Do refresh for completed requests.
+    }
     
     /**
      * Initializes the controller class.
