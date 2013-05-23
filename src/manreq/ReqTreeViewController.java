@@ -143,6 +143,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         ReqTreeItem parentCart = (ReqTreeItem) selItem.getParent();
         
         //Get list of the indecies of the items that need to be moved
+        //Make a snapshot of the selected indecies.
         List<Integer> indecies = reqTreeView.getSelectionModel().getSelectedIndices();
         //Build list of Tree items that are to be moved.
         List<ReqTreeItem> leafsToBeMoved = new ArrayList<>();
@@ -158,22 +159,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         Long oldCartNum = ((Request) selItem.getValue()).getCartnum();
         Long newCartNum = getFreshCartNum(oldCartNum);
          
-        /*
-        //Calculate a new half of the cart number for the date.
-        //leading 32 bits are 0xffffffff mask to get 0x00000000
-        Long dateHash = new Long (new Date().hashCode()) & 0x00000000ffffffffL; 
-        //Mask off half the old cart number. Replace it with new date hash code.
-        Long newCartNum = (oldCartNum & 0x7fffffff00000000L) | dateHash;
-
-        //debug
-        Long s1 = oldCartNum & 0x7fffffff00000000L;
-        log.debug("oldHash: "+String.format("%1$016x %1$d", oldCartNum));
-        log.debug("masked : "+String.format("%1$016x %1$d", s1));
-        log.debug("dateHash:"+String.format("%1$016x %1$d", dateHash));
-        log.debug("newHash: "+String.format("%1$016x %1$d", newCartNum));
-
-        */
-        
         //Create new cart item with the same text as the original cart parentCart.orgzText
         ReqTreeItem dupCart = 
                 new ReqTreeItem(parentCart.orgzText, ReqTreeItem.ItemType.CART);
@@ -215,6 +200,28 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     @FXML
     public void entryRemove(ActionEvent aEvt){
         log.debug("Entry: remove. action handler");
+        
+        //Get the item that was last selected in the TreeView
+        ReqTreeItem selItem = 
+                (ReqTreeItem) reqTreeView.getSelectionModel().getSelectedItem();
+        
+        Request r = (Request) selItem.getValue();
+        
+        //If there isn't a request, return immediately.
+        if(r == null){return;}
+        
+        //Tell the data model to make a backup, and that this node is to be 
+        //deleted.
+        DataModel.getInstance().backupRequest(r, Boolean.TRUE);
+        
+        //Set data has been modified flag for the controller.
+        this.setDataModified(true);
+        
+        //Mark the item display flag indicating that it will be deleted.
+        selItem.setDataHasBeenDeleted(Boolean.TRUE);
+        
+        //update UI
+        reqTreeView.requestLayout();
     }
     
     @FXML
@@ -736,7 +743,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     }
    
  
-    
 ////////////////////////// TREE VIEW FUNCTIONS /////////////////////////////////    
     /* Functions and Inner classes to handle the TreeView
      * specifically for Request entities. */
@@ -898,13 +904,14 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     }
     
     /* Go throught the reqTreeView, and reset the value of he property  
-     * hasDataBeenModified of each of the ReqTreeItems.  The force a recalc
+     * hasDataBeenModified of each of the ReqTreeItems.  Then force a recalc
      * of all the ReqTreeCells in order to reflect the style changes.
      */
     private void resetAllChildItemsIsModified(ReqTreeItem rti){
         //Go through and remove class .tree-cell.dataChanged from all tree items.
        Iterator itt = rti.getChildren().iterator();
        rti.setDataHasBeenChanged(Boolean.FALSE);
+       //rti.setDataHasBeenDeleted(Boolean.FALSE);
        //A recursive call... meh.
        while(itt.hasNext()){
            ReqTreeItem r = (ReqTreeItem) itt.next();
@@ -925,6 +932,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         private String orgzText = "";
         private ItemType orgzType;
         private Boolean dataHasBeenChanged = false;
+        private Boolean dataHasBeenDeleted = false;
         
         //Blank item and default constructor
         ReqTreeItem(){
@@ -1133,7 +1141,24 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         public Boolean getDataHasBeenChanged() {
             return dataHasBeenChanged;
         }
-
+        
+        /**
+         * @return the dataHasBeenDeleted
+         */
+        public Boolean getDataHasBeenDeleted() {
+            return dataHasBeenChanged;
+        }
+        
+        /**
+         * @param dataHasBeenDeleted( Boolean dataHasBeenDeleted )
+         * Function to set the flag indicating that this item is flagged for 
+         * deletion
+         */
+        public void setDataHasBeenDeleted(Boolean dataHasBeenDeleted){
+            this.dataHasBeenChanged = dataHasBeenDeleted; //deleted counts as changed as well.
+            this.dataHasBeenDeleted = dataHasBeenDeleted;
+        }
+        
         /**
          * @param dataHasBeenChanged the dataHasBeenChanged to set
          */
@@ -1296,18 +1321,17 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                     this.setGraphic( new ImageView(vialIcon));
                     //Set the contextMenu
                     this.setContextMenu(reqEntryConMen);
-                    //Set the style if the based on if the data has been modified
-                    //this.getStyleClass().add("tree-cell.dataChanged");
                     
-                    //this.getStyleClass().add("tree-cell.dataChanged");
-                    //this.getStyleClass().add(0, "tree-cell.dataChanged");
-                    if(this.getReqTreeItem().dataHasBeenChanged){
+                    //Set the style if the based on if the data has been modified
+                    
+                    if(this.getReqTreeItem().getDataHasBeenDeleted()){
+                        //do style for has data been deleted
+                    }else if(this.getReqTreeItem().dataHasBeenChanged){
                         this.setStyle("-fx-text-fill: red;");
                     }else{
+                        //default back to the CSS only.
                         this.setStyle(null);
                     }
-                    
-                    
                 }
             }
         }
