@@ -1515,25 +1515,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                 }
             });
             
-            //Remove item if drag and drop was successful
-            c.setOnDragDone(new EventHandler<DragEvent>(){
-                @Override
-                public void handle(DragEvent dEvt){
-                    
-                    //check that caller c is the event source
-                    if(dEvt.getGestureSource() != c){ return; }
-                    //check that source is an Entry
-                    if(getOrganizingType(c) != ReqTreeItem.ItemType.ENTRY ){
-                        return;
-                    }
-                    //check that the DataFormat  of dragboard is tilpersist/Request
-                    if(dEvt.getDragboard().hasContent(dFmt)){
-                        //Do
-                    }
-                    dEvt.consume();
-                }
-            });
-           
+
             return c;
         } 
     }
