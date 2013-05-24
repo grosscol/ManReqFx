@@ -834,9 +834,9 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     }
 
 
-    //Search children of start.
-    //Designed to be used on the Completed, Pending Appr, or Pending Pull nodes.
-    //Will return the PARENT of the first item with a matching cart num
+    /* Search children of start for a specific cartnumber, findMe.
+     * Designed to be used on the Completed, Pending Appr, or Pending Pull nodes.
+     * Will return the PARENT of the first item with a matching cart num */
     private ReqTreeItem findParentOfCartNum(ReqTreeItem start, Long findMe){
         Iterator itt = start.getChildren().iterator();
         ReqTreeItem retVal = null;
@@ -1247,10 +1247,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                .getResourceAsStream("resources/Blank_16x16.png")
                );
        
-       
-
-
-        
         ReqTreeCell(){
             this.setText("Blank");
             this.setItem(null);
@@ -1323,15 +1319,14 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                     this.setContextMenu(reqEntryConMen);
                     
                     //Set the style if the based on if the data has been modified
-                    
                     if(this.getReqTreeItem().getDataHasBeenDeleted() == Boolean.TRUE){
                         //do style for has data been deleted
                         this.setStyle("-fx-font-style: italic; "
-                                + "-fx-font-weight: lighter;");
+                                + "-fx-font-weight: bold;");
                     }else if(this.getReqTreeItem().dataHasBeenChanged){
                         this.setStyle("-fx-text-fill: red;");
                     }else{
-                        //default back to the CSS only.
+                        //default back to the externally CSS defined style.
                         this.setStyle(null);
                     }
                 }
@@ -1515,7 +1510,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                 }
             });
             
-
+            
             return c;
         } 
     }
