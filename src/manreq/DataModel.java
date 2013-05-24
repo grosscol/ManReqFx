@@ -414,38 +414,19 @@ public class DataModel {
         //Set busy to be true;
         isBusyRequests.set(true);
         
-        //TODO: check that the backups are the same as in the db. (stale check)
-        
-        //After validation that backups aren't different than the db, 
-        // get the list of requests to change, and create a Task to do the db
-        // update in the background.
-        
-        //List of requests to modify are the non-null values
-        List<Request> lrMod = new ArrayList<>(moddedReqs.values());
-        //Strip out null values.
-        for(int i=0; i < lrMod.size(); i ++){
-            if(lrMod.get(i) == null){ lrMod.remove(i);}
-        }
-            
-        //List of requests to delete are the backed up requests with modded values that == null.
-        List<Request> lrDel = new ArrayList<>();
-        for(Long l : moddedReqs.keySet()){
-            if(moddedReqs.get(l) == null){
-                //The modded request is null.  Put original with matching key
-                // on the list for deletion
-                lrDel.add(backedReqs.get(l));
-            }
-        }
-        
-        //This worker is a Task that will be doing the updates.
-        RequestsWorker rmw = new RequestsWorker(lrMod, lrDel, emfactory.createEntityManager() );
+        //Get the map of modifications (changes and deletes) and pass them to
+        // a request worker that will check and update the database.
+        EntityManager em = emfactory.createEntityManager();
+        RequestsMapWorker reqWorker = 
+                new RequestsMapWorker(getReadOnlyRequestChanges(), 
+                em );
         
         //Setup listeners to handle the result of the task.
-        rmw.setOnSucceeded( new ReqReturnHandler() );
-        rmw.setOnFailed( new ReqReturnHandler() );
+        reqWorker.setOnSucceeded( new ReqReturnHandler() );
+        reqWorker.setOnFailed( new ReqReturnHandler() );
 
         //Create a thread for the worker
-        Thread thr = new Thread(rmw);
+        Thread thr = new Thread(reqWorker);
         //Set the thread status to daemon.  It's not a user thread.
         thr.setDaemon(true);
         //Set it running
@@ -661,6 +642,8 @@ public class DataModel {
         //Constructor that takes a list of requests to merge
         RequestsMapWorker(Map<Request,Request> reqs, EntityManager em){
             reqsToBeHandled = new LinkedHashMap<>();
+            entManager = em;
+            
             //Make a clone of the given Map.
             for(Request r : reqs.keySet()){
                 if(reqs.get(r) == null){
@@ -694,6 +677,21 @@ public class DataModel {
                     if(r.equals(lockR) == false){
                         //The object in the database is not equivalent to our
                         // "original" object.  Some of our data is stale.  Run away!
+                                               
+                        boolean b;
+                        int i;
+                        i = r.getCartnum().compareTo(lockR.getCartnum() );
+                        //i = r.getDateappr().compareTo(lockR.getDateappr());
+                        //i = r.getDatepull().compareTo(lockR.getDateappr());
+                        //i = r.getDatesub().compareTo(lockR.getDatesub());
+                        b = (r.getEmail() == null ? lockR.getEmail() == null : r.getEmail().equals(lockR.getEmail()));
+                        i = r.getFpni().compareTo(lockR.getFpni());
+                        b = r.getNumrequested() ==  lockR.getNumrequested();
+                        i = r.getReqIndex().compareTo(lockR.getReqIndex());
+                        b = (r.getRmdest() == null ? lockR.getRmdest() == null : r.getRmdest().equals(lockR.getRmdest()));
+                        b = (r.getRname() == null ? lockR.getRname() == null : r.getRname().equals(lockR.getRname()));
+                        b = (r.getRnote() == null ? lockR.getRnote() == null : r.getRnote().equals(lockR.getRnote()));
+                        b = (r.getSbuser() == null ? lockR.getSbuser() == null : r.getSbuser().equals(lockR.getSbuser()));
                         
                     }else{
                         //the data is not stale, and there is a lock on it.
@@ -716,19 +714,19 @@ public class DataModel {
                 //commit the transaction (all the updates)
                 entManager.getTransaction().commit();
                 retVal=Boolean.TRUE;
+                this.updateMessage("Task succeeded.");
 
             }catch(Exception myEx){
                 Logger.getLogger(manreq.DataModel.class).debug(myEx);
                 //rollback the transaction if there was a problem
                 entManager.getTransaction().rollback();
                 retVal=Boolean.FALSE;
-            }
-
-            
-            Logger.getLogger(manreq.DataModel.class).debug("Task call complete.");
-            
-            this.updateMessage("Task call completed.");
-            return retVal;            
+                this.updateMessage("Task failed.");
+                //this.f
+            }finally{
+                Logger.getLogger(manreq.DataModel.class).debug("Task call complete.");
+                return retVal;   
+            }        
         }
         
     }

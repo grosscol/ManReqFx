@@ -1348,9 +1348,10 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                     if(this.getReqTreeItem().getDataHasBeenDeleted() == Boolean.TRUE){
                         //do style for has data been deleted
                         this.setStyle("-fx-font-style: italic; "
-                                + "-fx-font-weight: bold;");
+                                + "-fx-font-weight: bold; "
+                                + "-fx-text-fill: red;");
                     }else if(this.getReqTreeItem().dataHasBeenChanged){
-                        this.setStyle("-fx-text-fill: red;");
+                        this.setStyle("-fx-text-fill: blue;");
                     }else{
                         //default back to the externally CSS defined style.
                         this.setStyle(null);
