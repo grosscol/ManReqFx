@@ -19,6 +19,7 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.LockModeType;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
@@ -418,16 +419,31 @@ public class DataModel {
         //After validation that backups aren't different than the db, 
         // get the list of requests to change, and create a Task to do the db
         // update in the background.
+        
+        //List of requests to modify are the non-null values
         List<Request> lrMod = new ArrayList<>(moddedReqs.values());
-
+        //Strip out null values.
+        for(int i=0; i < lrMod.size(); i ++){
+            if(lrMod.get(i) == null){ lrMod.remove(i);}
+        }
+            
+        //List of requests to delete are the backed up requests with modded values that == null.
+        List<Request> lrDel = new ArrayList<>();
+        for(Long l : moddedReqs.keySet()){
+            if(moddedReqs.get(l) == null){
+                //The modded request is null.  Put original with matching key
+                // on the list for deletion
+                lrDel.add(backedReqs.get(l));
+            }
+        }
+        
         //This worker is a Task that will be doing the updates.
-        RequestsWorker rmw = new RequestsWorker(lrMod, deleteMeReqs, emfactory.createEntityManager() );
+        RequestsWorker rmw = new RequestsWorker(lrMod, lrDel, emfactory.createEntityManager() );
         
         //Setup listeners to handle the result of the task.
         rmw.setOnSucceeded( new ReqReturnHandler() );
         rmw.setOnFailed( new ReqReturnHandler() );
 
-        
         //Create a thread for the worker
         Thread thr = new Thread(rmw);
         //Set the thread status to daemon.  It's not a user thread.
@@ -605,9 +621,9 @@ public class DataModel {
                 //Make the deletes to the database
                 if(reqsToBeDeleted != null){
                     for (Request r : reqsToBeDeleted){
-                        //Lock the entity and delete it
-                        //entManager.lock(r, LockModeType.WRITE);
-                        entManager.remove(r);
+                        //merge the entity back to being managed and remove it.
+                        entManager.remove(entManager.merge(r));
+                        
                     }
                 }
 
@@ -616,18 +632,101 @@ public class DataModel {
                 retVal=Boolean.TRUE;
 
             }catch(Exception myEx){
+                Logger.getLogger(manreq.DataModel.class).debug(myEx);
                 //rollback the transaction if there was a problem
                 entManager.getTransaction().rollback();
                 retVal=Boolean.FALSE;
-            }finally{
-                //Regardless of success or failure, close the entity manager.
-                try{
-                //entManager.close();
-                }catch(Exception ex){
-                    System.out.println(ex);
-                }
             }
 
+            
+            Logger.getLogger(manreq.DataModel.class).debug("Task call complete.");
+            
+            this.updateMessage("Task call completed.");
+            return retVal;            
+        }
+        
+    }
+
+/* Background worker to run on a separate thread and execute updates/deletes in the database
+ * Takes a Map<Request, Request> as in input where key=OldRequestObj, value=NewRequestObj
+ */
+
+    class RequestsMapWorker extends Task<Boolean>{
+        
+        Map<Request,Request> reqsToBeHandled;
+        List<Request> reqsToBeMerged;
+        List<Request> reqsToBeDeleted;
+        EntityManager entManager;
+        
+        //Constructor that takes a list of requests to merge
+        RequestsMapWorker(Map<Request,Request> reqs, EntityManager em){
+            reqsToBeHandled = new LinkedHashMap<>();
+            //Make a clone of the given Map.
+            for(Request r : reqs.keySet()){
+                if(reqs.get(r) == null){
+                    reqsToBeHandled.put((Request) r.clone(), null);
+                }else{
+                    reqsToBeHandled.put( (Request) r.clone(), 
+                                         (Request) reqs.get(r).clone());
+                }
+            }
+        }
+        
+        @Override
+        protected Boolean call() throws Exception {
+            //assume the call does not succeed. Set initila return value to false
+            Boolean retVal = Boolean.FALSE;
+            //Check that the entity manager exists and is open.
+            if(entManager == null || entManager.isOpen() == false){
+                return(retVal);
+            }
+            
+
+            try{
+                entManager.getTransaction().begin();
+                
+                //A request object for the locked request
+                Request lockR;
+                for(Request r : reqsToBeHandled.keySet()){
+                    
+                    //Check that the original version is still the correct version
+                    lockR = entManager.find(Request.class, r.getReqIndex(), LockModeType.PESSIMISTIC_WRITE);
+                    if(r.equals(lockR) == false){
+                        //The object in the database is not equivalent to our
+                        // "original" object.  Some of our data is stale.  Run away!
+                        
+                    }else{
+                        //the data is not stale, and there is a lock on it.
+                        if(reqsToBeHandled.get(r) == null){
+                            //The original needs to be removed.
+                            entManager.remove(lockR);
+                        }else{
+                            //Update the database with the new version
+                            //unlock
+                            entManager.lock(lockR, LockModeType.NONE);
+                            /* Somebody could still sneak in after the unlock
+                             * Would be safer to modify the locked object fields
+                             * to match the desired values. */
+                            //merge
+                            entManager.merge(reqsToBeHandled.get(r));
+                        }
+                    }
+                }
+
+                //commit the transaction (all the updates)
+                entManager.getTransaction().commit();
+                retVal=Boolean.TRUE;
+
+            }catch(Exception myEx){
+                Logger.getLogger(manreq.DataModel.class).debug(myEx);
+                //rollback the transaction if there was a problem
+                entManager.getTransaction().rollback();
+                retVal=Boolean.FALSE;
+            }
+
+            
+            Logger.getLogger(manreq.DataModel.class).debug("Task call complete.");
+            
             this.updateMessage("Task call completed.");
             return retVal;            
         }
