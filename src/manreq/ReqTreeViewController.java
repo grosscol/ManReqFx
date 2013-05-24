@@ -177,7 +177,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
          * handle the backups and modifications of the remainder. 
         */
         DataModel.getInstance().backupRequest(
-                ((Request) leafsToBeMoved.get(0).getValue() )
+                ((Request) leafsToBeMoved.get(0).getValue() ),
+                leafsToBeMoved.get(0).getDataHasBeenDeleted()
                 );
 
         //Modify the cart number on the first item after it has been backedup.
@@ -432,10 +433,12 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             //Destination that the request will be re-inserted into.
             ReqTreeItem destParent;
             
-            //If the currReq is null, the entry was deleted.
+            //If the currReq is null, the entry was marked for deletion.
             if(currReq == null){
-                //make a new TreeItem based on the original Request
-                source = new ReqTreeItem(origReq);
+                //The original item is the current item, but the cartnum of the 
+                // TreeItem value may have changed. Use the ReqIndex to find the entry.
+                source = findTreeItemWithReqIndex(
+                            (ReqTreeItem) reqTreeView.getRoot(), origReq.getReqIndex() );
             }else{
                 //get the corresponding, current request tree item
                 source =  findTreeItemWithValue(
@@ -841,7 +844,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         Iterator itt = start.getChildren().iterator();
         ReqTreeItem retVal = null;
         
-        
         //Iterate until the end or until you hae something to return.
         while(itt.hasNext() && retVal == null){
             ReqTreeItem rti = (ReqTreeItem) itt.next();
@@ -883,6 +885,30 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         }
         
         //Finally return the final over write of the retVal
+        return retVal;
+    }
+    
+    private ReqTreeItem findTreeItemWithReqIndex( ReqTreeItem start, Long findIndex){
+        Iterator itt = start.getChildren().iterator();
+        ReqTreeItem retVal = null;
+        
+        //Iterate until the end or until you hae something to return.
+        while(itt.hasNext() && retVal == null){
+            ReqTreeItem rti = (ReqTreeItem) itt.next();
+            Request rVal = (Request) rti.getValue();
+            
+            //if this is it, return
+            if( rVal != null &&
+                rVal.getReqIndex().compareTo(findIndex) == 0)
+            { 
+                retVal = rti;
+                log.debug("Tree Item match found by ReqIndex.");
+            }else{
+                //make a recursive call
+                retVal =  findTreeItemWithReqIndex(rti, findIndex) ;
+            }
+        }
+        
         return retVal;
     }
     
@@ -1048,8 +1074,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             //If this is the first item added to the Cart, Rewrite the title
             //Also need to assign fresh cart number.
             if(this.getChildren().size() == 1){
-                //Backup the request before updating it.
-                DataModel.getInstance().backupRequest( donorReq );
+                //Backup the request before updating it. Include intent to delete flag.
+                DataModel.getInstance().backupRequest( donorReq, donor.getDataHasBeenDeleted() );
                 
                 //Get fresh cart number
                 donorReq.setCartnum(getFreshCartNum(donorReq.getCartnum()));
@@ -1064,8 +1090,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                 //Get the request item from the first child of this cart item
                 Request aReq = this.getChildren().get(0).getValue();
                 
-                //Backup the request before updating it.
-                DataModel.getInstance().backupRequest( donorReq );
+                //Backup the request before updating it. Include intent to delete flag.
+                DataModel.getInstance().backupRequest( donorReq, donor.dataHasBeenDeleted );
                                 
                 //Set the cart number of the donor to match.
                 ( (Request) donor.getValue() ).setCartnum(aReq.getCartnum());
