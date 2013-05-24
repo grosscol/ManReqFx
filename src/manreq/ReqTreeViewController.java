@@ -220,8 +220,9 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         //Mark the item display flag indicating that it will be deleted.
         selItem.setDataHasBeenDeleted(Boolean.TRUE);
         
-        //update UI
-        reqTreeView.requestLayout();
+        //update UI force redra. Kluge
+        selItem.getParent().setExpanded(false);
+        selItem.getParent().setExpanded(true);
     }
     
     @FXML
@@ -911,7 +912,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         //Go through and remove class .tree-cell.dataChanged from all tree items.
        Iterator itt = rti.getChildren().iterator();
        rti.setDataHasBeenChanged(Boolean.FALSE);
-       //rti.setDataHasBeenDeleted(Boolean.FALSE);
+       rti.setDataHasBeenDeleted(Boolean.FALSE);
        //A recursive call... meh.
        while(itt.hasNext()){
            ReqTreeItem r = (ReqTreeItem) itt.next();
@@ -1146,7 +1147,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
          * @return the dataHasBeenDeleted
          */
         public Boolean getDataHasBeenDeleted() {
-            return dataHasBeenChanged;
+            return dataHasBeenDeleted;
         }
         
         /**
@@ -1155,7 +1156,6 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
          * deletion
          */
         public void setDataHasBeenDeleted(Boolean dataHasBeenDeleted){
-            this.dataHasBeenChanged = dataHasBeenDeleted; //deleted counts as changed as well.
             this.dataHasBeenDeleted = dataHasBeenDeleted;
         }
         
@@ -1324,8 +1324,10 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                     
                     //Set the style if the based on if the data has been modified
                     
-                    if(this.getReqTreeItem().getDataHasBeenDeleted()){
+                    if(this.getReqTreeItem().getDataHasBeenDeleted() == Boolean.TRUE){
                         //do style for has data been deleted
+                        this.setStyle("-fx-font-style: italic; "
+                                + "-fx-font-weight: lighter;");
                     }else if(this.getReqTreeItem().dataHasBeenChanged){
                         this.setStyle("-fx-text-fill: red;");
                     }else{
