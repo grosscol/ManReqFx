@@ -912,8 +912,10 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         return retVal;
     }
     
-    private void removeLeafNonValueItems(ReqTreeItem start){
-        Iterator itt = start.getChildren().iterator();
+    //Function to go through and remove empty carts from tree view
+    //Will not remove the item from which the call initially begins.
+    private void removeLeafNonValueItems(ReqTreeItem parent){
+        Iterator itt = parent.getChildren().iterator();
         while(itt.hasNext()){
             ReqTreeItem rti = (ReqTreeItem) itt.next();
             //if it is a leaf, has no data value, and is not the root
@@ -928,6 +930,27 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                 removeLeafNonValueItems(rti);
             }
         }
+    }
+    
+    //Function to remove items marked for deletion from tree view.
+    //Will not remove the parent node that the call initially starts from.
+    private void removeMarkedForDeletionItems(ReqTreeItem parent){
+        
+        //Do recursive call through all child nodes
+        Iterator itt = parent.getChildren().iterator();
+        while(itt.hasNext()){
+            ReqTreeItem rti = (ReqTreeItem) itt.next();
+            
+            //If the item is a leaf and has been marked for deletion
+            if(rti.isLeaf() && rti.getDataHasBeenDeleted()){
+                itt.remove();
+            }else{
+                removeMarkedForDeletionItems( rti );
+            }
+            
+        }
+        
+
     }
     
     /* Go throught the reqTreeView, and reset the value of he property  
@@ -1595,13 +1618,14 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                     //Everything worked. Clear out any empty carts.
                     removeLeafNonValueItems((ReqTreeItem) reqTreeView.getRoot());
                     
-                    //UI should be up to date.
-                    //Remove overlay and permit mouse events through
-                    busyOverlay.setVisible(false);
-                    busyOverlay.setMouseTransparent(true);
-
+                    //Change property informing main controller about data state.
                     setDataModified(false);
 
+                    //remove all the nodes that were marked for deletion
+                    removeMarkedForDeletionItems(
+                            (ReqTreeItem) reqTreeView.getRoot()
+                            );
+                    
                     //reset all the nodes to not modified flag.
                     resetAllChildItemsIsModified(
                         (ReqTreeItem) reqTreeView.getRoot()
@@ -1610,6 +1634,13 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
                     //force rerender of tree view. Kluge.
                     reqTreeView.getRoot().setExpanded(false);
                     reqTreeView.getRoot().setExpanded(true);
+                    
+                    //Remove overlay and permit mouse events through
+                    busyOverlay.setVisible(false);
+                    busyOverlay.setMouseTransparent(true);
+
+                    
+                    
                     
                 }else{
                     log.debug("The last database operation failed.");
