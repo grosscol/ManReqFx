@@ -22,6 +22,7 @@
           <items>
             <MenuItem onAction="#cartMarkApproved" text="Mark Approved" />
             <MenuItem onAction="#cartMarkPulled" text="Mark Pulled" />
+            <MenuItem onAction="#printCart" text="Print Cart" />
           </items>
         </ContextMenu>
       </contextMenu>
@@ -30,6 +31,7 @@
       <contextMenu>
         <ContextMenu fx:id="reqEntryConMen">
           <items>
+            <MenuItem onAction="#printSelected" text="Print Selected" />
             <MenuItem onAction="#entryEdit" text="Edit Entry" />
             <MenuItem onAction="#entryMoveToNewCart" text="Move to Duplicate Cart" />
             <MenuItem onAction="#entryRemove" text="Remove Entry" />

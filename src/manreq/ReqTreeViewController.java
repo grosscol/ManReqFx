@@ -123,6 +123,20 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
     }
     
     @FXML
+    public void printSelected(ActionEvent aEvt){
+        //Get list of requests
+        
+        //Pass list of requests to Handle Print
+    }
+    
+    @FXML
+    public void printCart(ActionEvent aEvt){
+        //Get list of requests
+        
+        //Pass list of requests to Handle Print
+    }
+    
+    @FXML
     public void entryEdit(ActionEvent aEvt){
         log.debug("Entry: edit. action handler");
     }
