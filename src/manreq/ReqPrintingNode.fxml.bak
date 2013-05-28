@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane id="AnchorPane" fx:id="printBox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="90.0" prefWidth="250.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml">
+  <children>
+    <TextArea fx:id="descriptTextArea" editable="false" prefHeight="65.0" prefWidth="250.0" text="Rx 1 Infusion Bag TIL 5555 F5 R5D55&#10;5E7 cells. A long comment about Comments.&#10;pni_index: 55555555" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0" />
+    <Label fx:id="nameLabel" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="191.0" text="DemoLname, DemoFname" AnchorPane.bottomAnchor="65.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="57.0" AnchorPane.topAnchor="0.0">
+      <font>
+        <Font name="Arial Black" size="12.0" />
+      </font>
+    </Label>
+    <Label fx:id="pullNumLabel" alignment="CENTER_RIGHT" contentDisplay="RIGHT" graphicTextGap="6.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="55.0" text="99 of 99" AnchorPane.bottomAnchor="65.0" AnchorPane.leftAnchor="193.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0">
+      <font>
+        <Font name="Arial" size="12.0" />
+      </font>
+    </Label>
+  </children>
+  <stylesheets>
+    <URL value="@resources/reqprintingnode.css" />
+  </stylesheets>
+</AnchorPane>
