@@ -7,7 +7,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="525.0" prefWidth="712.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml" fx:controller="manreq.MainController">
+<AnchorPane id="AnchorPane" prefHeight="525.0" prefWidth="800.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml" fx:controller="manreq.MainController">
   <children>
     <MenuBar minHeight="21.0" prefHeight="21.0" prefWidth="600.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <menus>
@@ -32,7 +32,7 @@
       <items>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
           <children>
-            <SplitPane dividerPositions="0.826271186440678" focusTraversable="true" prefHeight="185.0" prefWidth="598.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="0.0">
+            <SplitPane dividerPositions="0.8454773869346733" focusTraversable="true" prefHeight="185.0" prefWidth="598.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="0.0">
               <items>
                 <AnchorPane id="swapPane" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                   <children>

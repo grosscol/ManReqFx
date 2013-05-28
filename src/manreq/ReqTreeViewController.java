@@ -572,36 +572,7 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
             reqTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
             //Add a listener for selection changes
             reqTreeView.getSelectionModel().getSelectedItems().addListener(
-                    new ListChangeListener<ReqTreeItem>(){
-
-                    @Override
-                    public void onChanged(ListChangeListener.Change<? extends ReqTreeItem> change) {
-                        //Get the selected items
-                        List<ReqTreeItem> si = reqTreeView.getSelectionModel().getSelectedItems();
-                        //return immediately if none are selected.
-                        if(si == null || si.size()<1){return;}
-                        
-                        //Construct the text to add to the infoTextArea.
-                        StringBuilder sb = new StringBuilder();
-                        for(ReqTreeItem r : si){
-                            //for whatever reason the selected items can include null
-                            if(r == null){
-                                sb.append("No Selection");
-                            }
-                            else if(r.getValue() == null){
-                                sb.append("Cart: ").append(r.getOrgzText());
-
-                            }else{
-                                sb.append("Entry CartNum: ");
-                                sb.append( ((Request) r.getValue()).getCartnum() );
-                            }
-                            sb.append('\n');
-                        }
-                        //Set info text for the user
-                        infoTextOut.setText(sb.toString());
-                    }
-                        
-                    });
+                    new ReqTreeItemSelectionListener() );
             
             //Organizing Tree Items
             ReqTreeItem<Request> tiRoot 
@@ -1565,6 +1536,38 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         } 
     }
     
+    
+    //Listener class to react to selection changes.
+    private class ReqTreeItemSelectionListener implements ListChangeListener<ReqTreeItem> {
+
+        @Override
+        public void onChanged(ListChangeListener.Change<? extends ReqTreeItem> change) {
+            //Get the selected items
+            List<ReqTreeItem> si = reqTreeView.getSelectionModel().getSelectedItems();
+            //return immediately if none are selected.
+            if(si == null || si.size()<1){return;}
+
+            //Construct the text to add to the infoTextArea.
+            StringBuilder sb = new StringBuilder();
+            for(ReqTreeItem r : si){
+                //for whatever reason the selected items can include null
+                if(r == null){
+                    sb.append("No Selection");
+                }
+                else if(r.getValue() == null){
+                    sb.append("Cart: ").append(r.getOrgzText());
+
+                }else{
+                    sb.append("Entry CartNum: ");
+                    sb.append( ((Request) r.getValue()).getCartnum() );
+                }
+                sb.append('\n');
+            }
+            //Set info text for the user
+            infoTextOut.setText(sb.toString());
+        }
+
+    }
    
 //////////////////////////////////////////////////////////////////////////////// 
     
