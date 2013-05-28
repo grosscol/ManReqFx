@@ -4,6 +4,8 @@
  */
 package manreq;
 
+import java.awt.print.PageFormat;
+import java.awt.print.PrinterJob;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,6 +53,13 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
+import javax.print.DocFlavor;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.PrintServiceAttributeSet;
+import javax.print.attribute.standard.Copies;
 import org.apache.log4j.Logger;
 import tilpersist.Norminv;
 import tilpersist.Request;
@@ -127,6 +136,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         //Get list of requests
         
         //Pass list of requests to Handle Print
+        ArrayList<Request> al = new ArrayList<>();
+        printRequests(al);
     }
     
     @FXML
@@ -134,6 +145,8 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         //Get list of requests
         
         //Pass list of requests to Handle Print
+        ArrayList<Request> al = new ArrayList<>();
+        printRequests(al);
     }
     
     @FXML
@@ -1670,4 +1683,108 @@ public class ReqTreeViewController implements Initializable, SwapPanelController
         }
         
     }
+    
+    ////////////////////////////////////////////////////////////////////////////////
+
+
+    //Handle printing function.  Given a list of Requests, Do ALL the printing setup
+    //and display required.
+
+    private void printRequests(List<Request> reqs){
+        //Get the printer dimensions
+        DocFlavor docFlavor = DocFlavor.INPUT_STREAM.PNG;
+
+        PrintRequestAttributeSet attributes = new HashPrintRequestAttributeSet();
+        attributes.add(new Copies(1));
+
+        PrintService printServices[] = PrintServiceLookup.lookupPrintServices(
+                docFlavor, attributes);
+        
+        if (printServices.length == 0) {
+            log.error("No java PrinterService found.");
+            return;
+        }
+        
+        PrintServiceAttributeSet psa = printServices[0].getAttributes();
+        if(psa.isEmpty()){
+            return;
+        }
+        
+        
+        
+        // Show PrintDialog
+        boolean confirm = PrinterJob.getPrinterJob().printDialog(attributes);
+        
+        //Cancelled printing.
+        if(confirm == false){ return; }
+        
+        //AnchorPane that is the printing template
+        AnchorPane template;
+        //Load the FXML anchor pane template
+        try{
+            log.debug("Loading the Request print template.");
+            
+            //Load the FXML node heirarchy for the RequestsTreeView
+            FXMLLoader printTemplateLoader = 
+                    new FXMLLoader(this.getClass().getResource("ReqPrintingNode.fxml"));
+            template = (AnchorPane) printTemplateLoader.load();
+        }catch(Exception myEx){
+            log.error("Request print template failed to load.");
+            log.error(myEx);
+            //Template did not load.  Depart from this function post haste.
+            return;
+        }
+        
+        
+        
+        //The attributes should be updated at this point
+        attributes.size();
+        
+        PageFormat pf = PrinterJob.getPrinterJob().getPageFormat(attributes);
+        
+        pf.getImageableHeight();
+        pf.getHeight();
+        pf.getImageableWidth();
+        pf.getWidth();
+        
+        
+        //Figure out how many of our printing nodes are going to fit per page.
+        Double numNodesInWidth;
+        Double numNodesInHeight;
+        
+        Long numXnodes;
+        Long numYnodes;
+        
+        //Do calculations for how many nodes are going to fit.
+        numNodesInWidth = pf.getImageableWidth() / template.getPrefWidth();
+        numXnodes = Math.round( Math.floor(numNodesInWidth) );
+
+        numNodesInHeight = pf.getImageableHeight() / template.getPrefHeight();
+        numYnodes = Math.round( Math.floor(numNodesInHeight) );
+        
+        if(pf.getOrientation() == PageFormat.LANDSCAPE){
+            //Reverse number of nodes for X and Y
+            Long temp = numXnodes;
+            numXnodes = numYnodes;
+            numYnodes = temp;
+        }
+        
+        //Do calculations as to much how much padding needs to be put in.
+        Long paddingX;
+        Long paddingY;
+        
+    
+        
+        template.getPrefHeight();
+        template.getPrefWidth();
+        
+        //Build me a node for printing.
+        //start with an anchor pane.
+        AnchorPane ap = new AnchorPane();
+        //ap.setPrefWidth(pf.getImageableWidth());
+        //ap.set
+    }
+
 }
+
+
